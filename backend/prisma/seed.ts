@@ -1,7 +1,12 @@
-import { PrismaClient, UserRole } from '@prisma/client';
+import 'dotenv/config';
+import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 import { hashSync } from 'bcryptjs';
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL || 'postgresql://mydevices:mydevices_dev@localhost:5432/mydevices',
+});
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   await prisma.user.upsert({
@@ -10,7 +15,7 @@ async function main() {
     create: {
       email: 'admin@mydevices.local',
       name: 'System Admin',
-      role: UserRole.super_admin,
+      role: 'super_admin',
       passwordHash: hashSync('admin123', 10),
     },
   });
