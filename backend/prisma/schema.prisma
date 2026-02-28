@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum DeviceType {
+  iPhone
+  iPad
+  Mac
+  AppleTV
+  AppleWatch
+  VisionPro
+}
+
+enum EnrollmentStatus {
+  pending
+  enrolled
+  unenrolled
+}
+
+enum AssetStatus {
+  in_use
+  in_stock
+  repairing
+  retired
+  lost
+}
+
+enum UserRole {
+  super_admin
+  device_admin
+  readonly
+}
+
+enum CommandStatus {
+  queued
+  sent
+  acknowledged
+  error
+  not_now
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  name         String
+  role         UserRole  @default(readonly)
+  passwordHash String    @map("password_hash")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  auditLogs    AuditLog[]
+  @@map("users")
+}
+
+model Device {
+  id               String           @id @default(uuid())
+  udid             String           @unique
+  serialNumber     String           @unique @map("serial_number")
+  deviceType       DeviceType       @map("device_type")
+  model            String?
+  modelName        String?          @map("model_name")
+  osVersion        String?          @map("os_version")
+  buildVersion     String?          @map("build_version")
+  deviceName       String?          @map("device_name")
+  productName      String?          @map("product_name")
+  storageCapacity  BigInt?          @map("storage_capacity")
+  wifiMac          String?          @map("wifi_mac")
+  bluetoothMac     String?          @map("bluetooth_mac")
+  enrollmentStatus EnrollmentStatus @default(pending) @map("enrollment_status")
+  lastSeenAt       DateTime?        @map("last_seen_at")
+  mdmEnrolled      Boolean          @default(false) @map("mdm_enrolled")
+  supervised       Boolean          @default(false)
+  pushMagic        String?          @map("push_magic")
+  pushToken        String?          @map("push_token")
+  unlockToken      String?          @map("unlock_token")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+  asset    Asset?
+  commands MDMCommand[]
+  profiles DeviceProfile[]
+  @@map("devices")
+}
+
+model Asset {
+  id            String      @id @default(uuid())
+  deviceId      String      @unique @map("device_id")
+  purchaseDate  DateTime?   @map("purchase_date")
+  purchasePrice Decimal?    @map("purchase_price") @db.Decimal(10, 2)
+  warrantyEnd   DateTime?   @map("warranty_end")
+  assignedTo    String?     @map("assigned_to")
+  department    String?
+  location      String?
+  status        AssetStatus @default(in_stock)
+  notes         String?
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  @@map("assets")
+}
+
+model MDMCommand {
+  id             String        @id @default(uuid())
+  deviceId       String        @map("device_id")
+  commandType    String        @map("command_type")
+  payload        Json?
+  status         CommandStatus @default(queued)
+  requestId      String        @unique @map("request_id")
+  queuedAt       DateTime      @default(now()) @map("queued_at")
+  sentAt         DateTime?     @map("sent_at")
+  acknowledgedAt DateTime?     @map("acknowledged_at")
+  result         Json?
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  @@map("mdm_commands")
+}
+
+model Profile {
+  id          String   @id @default(uuid())
+  name        String
+  identifier  String   @unique
+  payloadType String   @map("payload_type")
+  payload     Json
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  devices DeviceProfile[]
+  @@map("profiles")
+}
+
+model DeviceProfile {
+  id          String   @id @default(uuid())
+  deviceId    String   @map("device_id")
+  profileId   String   @map("profile_id")
+  installedAt DateTime @default(now()) @map("installed_at")
+  device  Device  @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  @@unique([deviceId, profileId])
+  @@map("device_profiles")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?  @map("user_id")
+  action     String
+  targetType String   @map("target_type")
+  targetId   String?  @map("target_id")
+  details    Json?
+  ipAddress  String?  @map("ip_address")
+  createdAt  DateTime @default(now()) @map("created_at")
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  @@index([createdAt])
+  @@index([targetType, targetId])
+  @@map("audit_logs")
+}
