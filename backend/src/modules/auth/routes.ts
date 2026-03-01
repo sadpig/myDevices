@@ -52,10 +52,27 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
     return user;
   });
 
+  fastify.patch('/me/preferences', {
+    preHandler: [authenticate],
+    schema: {
+      body: {
+        type: 'object',
+        properties: {
+          theme: { type: 'string', enum: ['light', 'dark', 'system'] },
+          language: { type: 'string', enum: ['zh', 'en'] },
+        },
+      },
+    },
+  }, async (request) => {
+    const { id } = request.user as { id: string };
+    const prefs = request.body as { theme?: string; language?: string };
+    return authService.updatePreferences(id, prefs);
+  });
+
   // User management — super_admin only
   fastify.get('/users', { preHandler: [requireRole('super_admin')] }, async (request) => {
-    const { page, limit } = request.query as { page?: string; limit?: string };
-    return authService.listUsers(parseInt(page || '1'), parseInt(limit || '20'));
+    const { page, limit, sortBy, sortOrder } = request.query as { page?: string; limit?: string; sortBy?: string; sortOrder?: string };
+    return authService.listUsers(parseInt(page || '1'), parseInt(limit || '20'), sortBy, (sortOrder as 'asc' | 'desc') || 'desc');
   });
 
   fastify.post('/register', {
@@ -96,6 +113,26 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
       if (err.message === 'Cannot delete yourself') return reply.status(400).send({ error: err.message });
       return reply.status(500).send({ error: 'Failed to delete user' });
     }
+  });
+
+  fastify.put('/users/:id', {
+    preHandler: [requireRole('super_admin')],
+    schema: {
+      body: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', minLength: 1, maxLength: 100 },
+          role: { type: 'string', enum: ['super_admin', 'device_admin', 'readonly'] },
+        },
+      },
+    },
+  }, async (request) => {
+    const { id } = request.params as { id: string };
+    const data = request.body as { name?: string; role?: string };
+    const user = await authService.updateUser(id, data as any);
+    const currentUser = request.user as { id: string };
+    await auditService.log(currentUser.id, 'user.update', 'user', id, data, request.ip);
+    return user;
   });
 
   fastify.post('/change-password', {
