@@ -27,7 +27,7 @@ export class DeviceService {
     const [devices, total] = await Promise.all([
       this.prisma.device.findMany({
         where,
-        include: { asset: { select: { status: true, assignedTo: true, department: true } } },
+        include: { asset: { select: { status: true, assignedToId: true, department: true } } },
         orderBy: { [orderField]: sortOrder },
         skip: (page - 1) * limit,
         take: limit,

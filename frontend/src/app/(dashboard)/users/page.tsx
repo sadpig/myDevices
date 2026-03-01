@@ -26,7 +26,7 @@ interface UserRow {
 const LIMIT = 20;
 
 export default function UsersPage() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { hasPermission } = useAuth();
 
   const [users, setUsers] = useState<UserRow[]>([]);
@@ -92,7 +92,7 @@ export default function UsersPage() {
   }
 
   async function handleCreate() {
-    if (!cEmail || !cName || !cPassword || !cRoleId) { setError('请填写所有必填项'); return; }
+    if (!cEmail || !cName || !cPassword || !cRoleId) { setError(t('users.fillRequired')); return; }
     setSaving(true); setError('');
     try {
       await api.post('/api/auth/register', {
@@ -106,12 +106,12 @@ export default function UsersPage() {
       setPage(1);
       fetchUsers();
     } catch (e: any) {
-      setError(e?.response?.data?.error || '创建失败');
+      setError(e?.response?.data?.error || t('settings.createFailed'));
     } finally { setSaving(false); }
   }
 
   async function handleEdit() {
-    if (!editTarget || !eName || !eRoleId) { setError('请填写所有必填项'); return; }
+    if (!editTarget || !eName || !eRoleId) { setError(t('users.fillRequired')); return; }
     setSaving(true); setError('');
     try {
       await api.put(`/api/auth/users/${editTarget.id}`, {

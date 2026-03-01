@@ -32,7 +32,7 @@ const assetRoutes: FastifyPluginAsync = async (fastify) => {
           purchaseDate: { type: 'string' },
           purchasePrice: { type: 'number', minimum: 0 },
           warrantyEnd: { type: 'string' },
-          assignedTo: { type: 'string', maxLength: 100 },
+          assignedToId: { type: 'string', format: 'uuid' },
           department: { type: 'string', maxLength: 100 },
           location: { type: 'string', maxLength: 200 },
           status: { type: 'string', enum: ['in_use', 'in_stock', 'repairing', 'retired', 'lost'] },

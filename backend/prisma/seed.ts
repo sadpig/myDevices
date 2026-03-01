@@ -273,6 +273,8 @@ async function main() {
   // 6. Assets (departmentId instead of department string)
   console.log('Seeding assets...');
 
+  const userIds = [admin.id, deviceAdmin.id, viewer.id];
+
   const assetStatuses: AssetStatus[] = ['in_use', 'in_use', 'in_use', 'in_stock', 'repairing', 'retired', 'lost'];
   const assetsToCreate = deviceIds.slice(0, 22);
   const allDeptIds = Object.values(deptMap);
@@ -285,7 +287,7 @@ async function main() {
         purchaseDate: randomDate(new Date('2023-01-01'), new Date('2025-06-01')),
         purchasePrice: parseFloat((Math.random() * 30000 + 2000).toFixed(2)),
         warrantyEnd: randomDate(new Date('2025-06-01'), new Date('2027-12-31')),
-        assignedTo: status === 'in_use' ? randomItem(NAMES) : null,
+        assignedToId: status === 'in_use' ? randomItem(userIds) : null,
         departmentId: randomItem(allDeptIds),
         location: randomItem(LOCATIONS),
         status,
@@ -364,7 +366,6 @@ async function main() {
 
   const actions = ['asset.create', 'asset.update', 'asset.delete', 'device.enroll', 'device.command', 'user.login', 'user.create'];
   const targetTypes = ['asset', 'device', 'user'];
-  const userIds = [admin.id, deviceAdmin.id, viewer.id];
 
   for (let i = 0; i < 50; i++) {
     const action = randomItem(actions);

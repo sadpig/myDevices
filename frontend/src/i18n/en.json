@@ -227,5 +227,9 @@
   "profiles.fields.identifier": "Identifier",
 
   "reports.osVersionDistribution": "OS Version Distribution",
-  "reports.unknown": "Unknown"
+  "reports.unknown": "Unknown",
+
+  "notifications.title": "Notifications",
+  "notifications.empty": "No notifications",
+  "notifications.markAllRead": "Mark all read"
 }

@@ -58,7 +58,8 @@ model User {
   role         Role        @relation(fields: [roleId], references: [id])
   department   Department? @relation(fields: [departmentId], references: [id])
   auditLogs    AuditLog[]
-  notifications Notification[]
+  notifications  Notification[]
+  assignedAssets Asset[]        @relation("AssetAssignee")
 
   @@map("users")
 }
@@ -101,7 +102,7 @@ model Asset {
   purchaseDate  DateTime?   @map("purchase_date")
   purchasePrice Decimal?    @map("purchase_price") @db.Decimal(10, 2)
   warrantyEnd   DateTime?   @map("warranty_end")
-  assignedTo    String?     @map("assigned_to")
+  assignedToId  String?     @map("assigned_to_id")
   departmentId  String?     @map("department_id")
   location      String?
   status        AssetStatus @default(in_stock)
@@ -110,6 +111,7 @@ model Asset {
   updatedAt     DateTime    @updatedAt @map("updated_at")
   device        Device      @relation(fields: [deviceId], references: [id], onDelete: Cascade)
   department    Department? @relation(fields: [departmentId], references: [id])
+  assignedUser  User?       @relation("AssetAssignee", fields: [assignedToId], references: [id])
 
   @@map("assets")
 }

@@ -75,7 +75,7 @@ function DeptNode({
         <Building2 className="w-4 h-4 text-muted-foreground shrink-0" />
         <span className="font-medium text-sm">{node.name}</span>
         <span className="text-xs text-muted-foreground font-mono">{node.code}</span>
-        <Badge variant="secondary" className="text-xs ml-1">{node._count.users} 人</Badge>
+        <Badge variant="secondary" className="text-xs ml-1">{t('departments.userCount', { count: node._count.users })}</Badge>
         {canWrite && (
           <div className="ml-auto hidden group-hover:flex items-center gap-1">
             <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => onEdit(node)}>
@@ -287,11 +287,11 @@ export default function DepartmentsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">部门管理</h1>
+        <h1 className="text-2xl font-bold">{t('departments.title')}</h1>
         {canWrite && (
           <Button onClick={openCreate}>
             <Plus className="w-4 h-4 mr-2" />
-            新建部门
+            {t('departments.create')}
           </Button>
         )}
       </div>
@@ -300,11 +300,11 @@ export default function DepartmentsPage() {
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">部门树</CardTitle>
+          <CardTitle className="text-base">{t('departments.tree')}</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
           {tree.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">暂无部门数据</p>
+            <p className="text-sm text-muted-foreground text-center py-8">{t('departments.noData')}</p>
           ) : (
             <div className="space-y-0.5">
               {tree.map(node => (
@@ -328,14 +328,14 @@ export default function DepartmentsPage() {
       <Dialog open={createOpen} onOpenChange={open => { if (!open) setCreateOpen(false); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>新建部门</DialogTitle>
+            <DialogTitle>{t('departments.create')}</DialogTitle>
           </DialogHeader>
           <FormFields />
           {dialogError && <p className="text-sm text-destructive">{dialogError}</p>}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateOpen(false)}>取消</Button>
+            <Button variant="outline" onClick={() => setCreateOpen(false)}>{t('common.cancel')}</Button>
             <Button onClick={handleCreate} disabled={saving}>
-              {saving ? '保存中...' : '创建'}
+              {saving ? t('common.saving') : t('common.create')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -345,14 +345,14 @@ export default function DepartmentsPage() {
       <Dialog open={!!editTarget} onOpenChange={open => { if (!open) setEditTarget(null); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>编辑部门</DialogTitle>
+            <DialogTitle>{t('departments.edit')}</DialogTitle>
           </DialogHeader>
           <FormFields />
           {dialogError && <p className="text-sm text-destructive">{dialogError}</p>}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditTarget(null)}>取消</Button>
+            <Button variant="outline" onClick={() => setEditTarget(null)}>{t('common.cancel')}</Button>
             <Button onClick={handleEdit} disabled={saving}>
-              {saving ? '保存中...' : '保存'}
+              {saving ? t('common.saving') : t('common.save')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -362,16 +362,16 @@ export default function DepartmentsPage() {
       <Dialog open={!!deleteTarget} onOpenChange={open => { if (!open) setDeleteTarget(null); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>确认删除</DialogTitle>
+            <DialogTitle>{t('common.confirmDelete')}</DialogTitle>
           </DialogHeader>
           <p className="text-sm py-2">
-            确定要删除部门 <span className="font-medium">{deleteTarget?.name}</span> 吗？若该部门下有子部门或用户则无法删除。
+            {t('departments.deleteConfirm', { name: deleteTarget?.name })}
           </p>
           {dialogError && <p className="text-sm text-destructive">{dialogError}</p>}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteTarget(null)}>取消</Button>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>{t('common.cancel')}</Button>
             <Button variant="destructive" onClick={handleDelete} disabled={saving}>
-              {saving ? '删除中...' : '删除'}
+              {saving ? t('roles.deleting') : t('common.delete')}
             </Button>
           </DialogFooter>
         </DialogContent>

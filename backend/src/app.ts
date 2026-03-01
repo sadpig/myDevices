@@ -14,11 +14,14 @@ import reportRoutes from './modules/reports/routes.js';
 import profileRoutes from './modules/profiles/routes.js';
 import departmentRoutes from './modules/departments/routes.js';
 import roleRoutes from './modules/roles/routes.js';
+import notificationRoutes from './modules/notifications/routes.js';
 import { requirePermission } from './middleware/authenticate.js';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { resolve } from 'path';
 
 export async function buildApp() {
+  (BigInt.prototype as any).toJSON = function () { return Number(this); };
+
   const app = Fastify({ logger: true });
 
   await app.register(cors, { origin: process.env.FRONTEND_URL || 'http://localhost:3000', credentials: true });
@@ -59,6 +62,7 @@ export async function buildApp() {
   await app.register(profileRoutes, { prefix: '/api/profiles' });
   await app.register(departmentRoutes, { prefix: '/api/departments' });
   await app.register(roleRoutes, { prefix: '/api/roles' });
+  await app.register(notificationRoutes, { prefix: '/api/notifications' });
 
   app.get('/health', async () => ({ status: 'ok' }));
 
@@ -98,6 +102,46 @@ export async function buildApp() {
 
     writeFileSync(envPath, envContent.trim() + '\n');
     return { message: 'APNs settings updated' };
+  });
+
+  app.get('/api/settings/smtp', { preHandler: [requirePermission('settings:read')] }, async () => {
+    return {
+      host: process.env.SMTP_HOST || '',
+      port: process.env.SMTP_PORT || '587',
+      user: process.env.SMTP_USER || '',
+      from: process.env.SMTP_FROM || '',
+      secure: process.env.SMTP_SECURE || 'false',
+    };
+  });
+
+  app.put('/api/settings/smtp', { preHandler: [requirePermission('settings:write')] }, async (request) => {
+    const body = request.body as Record<string, string>;
+    const envPath = resolve(process.cwd(), '.env');
+    let envContent = '';
+    try { envContent = readFileSync(envPath, 'utf-8'); } catch { envContent = ''; }
+
+    const mapping: Record<string, string> = {
+      host: 'SMTP_HOST', port: 'SMTP_PORT', user: 'SMTP_USER',
+      pass: 'SMTP_PASS', from: 'SMTP_FROM', secure: 'SMTP_SECURE',
+    };
+
+    for (const [key, envKey] of Object.entries(mapping)) {
+      if (body[key] !== undefined) {
+        const regex = new RegExp(`^${envKey}=.*$`, 'm');
+        if (regex.test(envContent)) {
+          envContent = envContent.replace(regex, `${envKey}=${body[key]}`);
+        } else {
+          envContent += `\n${envKey}=${body[key]}`;
+        }
+        process.env[envKey] = body[key];
+      }
+    }
+    writeFileSync(envPath, envContent.trim() + '\n');
+
+    const { resetTransporter } = await import('./services/mail.js');
+    resetTransporter();
+
+    return { message: 'SMTP settings updated' };
   });
 
   return app;
