@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Smartphone } from 'lucide-react';
-import { DEVICE_ICONS, ENROLLMENT_STATUS_LABELS, DEVICE_TYPES } from '@/lib/constants';
+import { DEVICE_ICONS, DEVICE_TYPES } from '@/lib/constants';
 import { SortableHeader, useSort } from '@/components/ui/sortable-header';
 
 export default function DevicesPage() {
@@ -70,7 +70,7 @@ export default function DevicesPage() {
                     <td className="p-3"><span className="flex items-center gap-2"><Icon className="h-4 w-4" />{d.deviceType}</span></td>
                     <td className="p-3 font-mono text-xs">{d.serialNumber}</td>
                     <td className="p-3">{d.osVersion || '-'}</td>
-                    <td className="p-3"><Badge variant={d.enrollmentStatus === 'enrolled' ? 'default' : 'secondary'}>{ENROLLMENT_STATUS_LABELS[d.enrollmentStatus] || d.enrollmentStatus}</Badge></td>
+                    <td className="p-3"><Badge variant={d.enrollmentStatus === 'enrolled' ? 'default' : 'secondary'}>{t('status.' + d.enrollmentStatus)}</Badge></td>
                     <td className="p-3">{d.lastSeenAt ? new Date(d.lastSeenAt).toLocaleString(i18n.language === 'zh' ? 'zh-CN' : 'en-US') : '-'}</td>
                     <td className="p-3"><Link href={`/devices/${d.id}`}><Button variant="ghost" size="sm">{t('common.details')}</Button></Link></td>
                   </tr>
