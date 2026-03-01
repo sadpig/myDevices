@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +21,7 @@ interface Stats {
 }
 
 export default function DashboardPage() {
+  const { t } = useTranslation();
   const [stats, setStats] = useState<Stats | null>(null);
   const [recentDevices, setRecentDevices] = useState<any[]>([]);
 
@@ -29,20 +31,20 @@ export default function DashboardPage() {
   }, []);
 
   const statusLabels: Record<string, string> = {
-    pending: '待注册', enrolled: '已注册', unenrolled: '已注销',
+    pending: t('status.pending'), enrolled: t('status.enrolled'), unenrolled: t('status.unenrolled'),
   };
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">仪表盘</h1>
+      <h1 className="text-2xl font-bold">{t('dashboard.title')}</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">设备总数</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">{t('dashboard.totalDevices')}</CardTitle></CardHeader>
           <CardContent><div className="text-3xl font-bold">{stats?.total ?? '-'}</div></CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">已注册</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">{t('dashboard.enrolled')}</CardTitle></CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-green-600">
               {stats?.byStatus.find(s => s.enrollmentStatus === 'enrolled')?._count ?? 0}
@@ -50,7 +52,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">待注册</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">{t('dashboard.pending')}</CardTitle></CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-yellow-600">
               {stats?.byStatus.find(s => s.enrollmentStatus === 'pending')?._count ?? 0}
@@ -61,7 +63,7 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
-          <CardHeader><CardTitle>设备类型分布</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t('dashboard.deviceTypeDistribution')}</CardTitle></CardHeader>
           <CardContent className="h-64">
             {stats?.byType && (
               <ResponsiveContainer width="100%" height="100%">
@@ -77,7 +79,7 @@ export default function DashboardPage() {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle>注册状态</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t('dashboard.enrollmentStatus')}</CardTitle></CardHeader>
           <CardContent className="h-64">
             {stats?.byStatus && (
               <ResponsiveContainer width="100%" height="100%">
@@ -94,23 +96,23 @@ export default function DashboardPage() {
       </div>
 
       <Card>
-        <CardHeader><CardTitle>最近设备</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t('dashboard.recentDevices')}</CardTitle></CardHeader>
         <CardContent>
           <table className="w-full text-sm">
             <thead className="border-b">
               <tr>
-                <th className="p-2 text-left">设备名称</th>
-                <th className="p-2 text-left">类型</th>
-                <th className="p-2 text-left">序列号</th>
-                <th className="p-2 text-left">系统版本</th>
-                <th className="p-2 text-left">状态</th>
+                <th className="p-2 text-left">{t('dashboard.deviceName')}</th>
+                <th className="p-2 text-left">{t('dashboard.type')}</th>
+                <th className="p-2 text-left">{t('dashboard.serial')}</th>
+                <th className="p-2 text-left">{t('dashboard.osVersion')}</th>
+                <th className="p-2 text-left">{t('dashboard.status')}</th>
               </tr>
             </thead>
             <tbody>
               {recentDevices.map((d: any) => {
                 const Icon = DEVICE_ICONS[d.deviceType] || Smartphone;
                 return (
-                  <tr key={d.id} className="border-b">
+                  <tr key={d.id} className="border-b hover:bg-muted/20">
                     <td className="p-2">{d.deviceName || '-'}</td>
                     <td className="p-2 flex items-center gap-2"><Icon className="h-4 w-4" />{d.deviceType}</td>
                     <td className="p-2 font-mono text-xs">{d.serialNumber}</td>
@@ -119,7 +121,7 @@ export default function DashboardPage() {
                   </tr>
                 );
               })}
-              {recentDevices.length === 0 && <tr><td colSpan={5} className="p-4 text-center text-muted-foreground">暂无设备</td></tr>}
+              {recentDevices.length === 0 && <tr><td colSpan={5} className="p-4 text-center text-muted-foreground">{t('dashboard.noDevices')}</td></tr>}
             </tbody>
           </table>
         </CardContent>
