@@ -4,10 +4,12 @@ import { Sidebar } from '@/components/layout/sidebar';
 import { Header } from '@/components/layout/header';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -15,7 +17,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }, [loading, user, router]);
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center">加载中...</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center">{t('common.loading')}</div>;
   if (!user) return null;
 
   return (
