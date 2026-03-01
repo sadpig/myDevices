@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { DevicePicker } from '@/components/device-picker';
 
 const flatDepts = (nodes: any[], depth = 0): { id: string; name: string; depth: number }[] =>
   nodes.flatMap((n: any) => [{ id: n.id, name: n.name, depth }, ...flatDepts(n.children || [], depth + 1)]);
@@ -73,7 +74,7 @@ export default function NewAssetPage() {
             {error && <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md">{error}</div>}
             <div className="space-y-2">
               <label className="text-sm font-medium">{t('assets.deviceId')}</label>
-              <Input value={form.deviceId} onChange={e => update('deviceId', e.target.value)} placeholder={t('assets.deviceIdPlaceholder')} required />
+              <DevicePicker value={form.deviceId} onChange={(id) => update('deviceId', id)} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -95,7 +96,7 @@ export default function NewAssetPage() {
                 <select
                   value={form.departmentId}
                   onChange={e => { update('departmentId', e.target.value); update('assignedToId', ''); }}
-                  className="w-full border rounded-md px-3 py-2 text-sm"
+                  className="w-full border rounded-md px-3 py-2 text-sm bg-background text-foreground"
                 >
                   <option value="">{t('common.select')}</option>
                   {depts.map(d => (
@@ -106,11 +107,12 @@ export default function NewAssetPage() {
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">{t('assets.assignedTo')}</label>
+                <label htmlFor="assignedToId" className="text-sm font-medium">{t('assets.assignedTo')}</label>
                 <select
+                  id="assignedToId"
                   value={form.assignedToId}
                   onChange={e => update('assignedToId', e.target.value)}
-                  className="w-full border rounded-md px-3 py-2 text-sm"
+                  className="w-full border rounded-md px-3 py-2 text-sm bg-background text-foreground"
                 >
                   <option value="">{t('common.select')}</option>
                   {users.map(u => (
@@ -126,16 +128,19 @@ export default function NewAssetPage() {
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">{t('assets.status')}</label>
-                <select value={form.status} onChange={e => update('status', e.target.value)} className="w-full border rounded-md px-3 py-2 text-sm">
+                <select value={form.status} onChange={e => update('status', e.target.value)} className="w-full border rounded-md px-3 py-2 text-sm bg-background text-foreground">
                   <option value="in_stock">{t('assetStatus.in_stock')}</option>
                   <option value="in_use">{t('assetStatus.in_use')}</option>
                   <option value="repairing">{t('assetStatus.repairing')}</option>
+                  <option value="retired">{t('assetStatus.retired')}</option>
+                  <option value="lost">{t('assetStatus.lost')}</option>
                 </select>
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">{t('assets.notes')}</label>
-              <Input value={form.notes} onChange={e => update('notes', e.target.value)} />
+              <label htmlFor="notes" className="text-sm font-medium">{t('assets.notes')}</label>
+              <textarea id="notes" value={form.notes} onChange={e => update('notes', e.target.value)}
+                className="w-full border rounded-md px-3 py-2 text-sm bg-background text-foreground min-h-[80px] resize-y" />
             </div>
             <Button type="submit" disabled={loading}>{loading ? t('common.creating') : t('common.create')}</Button>
           </form>

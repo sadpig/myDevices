@@ -106,6 +106,15 @@ const PERMISSIONS = [
   { code: 'report:read', name: '查看报表', module: 'report', sortOrder: 20 },
   { code: 'settings:read', name: '查看设置', module: 'settings', sortOrder: 21 },
   { code: 'settings:write', name: '编辑设置', module: 'settings', sortOrder: 22 },
+  { code: 'mdm:command', name: '执行 MDM 命令', module: 'mdm', sortOrder: 23 },
+  { code: 'profile:deploy', name: '部署配置文件', module: 'profile', sortOrder: 24 },
+  { code: 'dashboard:view', name: '查看仪表盘', module: 'dashboard', sortOrder: 25 },
+  { code: 'app:read', name: '查看应用', module: 'app', sortOrder: 26 },
+  { code: 'app:write', name: '编辑应用', module: 'app', sortOrder: 27 },
+  { code: 'app:deploy', name: '部署应用', module: 'app', sortOrder: 28 },
+  { code: 'content:read', name: '查看内容', module: 'content', sortOrder: 29 },
+  { code: 'content:write', name: '编辑内容', module: 'content', sortOrder: 30 },
+  { code: 'content:deploy', name: '分发内容', module: 'content', sortOrder: 31 },
 ];
 
 const ROLES = [
@@ -122,6 +131,8 @@ const ROLES = [
       'asset:read', 'asset:write',
       'profile:read', 'profile:write',
       'audit:read', 'report:read',
+      'mdm:command', 'profile:deploy', 'dashboard:view',
+      'app:read', 'app:write', 'app:deploy', 'content:read',
     ],
   },
   {
@@ -131,6 +142,7 @@ const ROLES = [
       'device:read', 'asset:read', 'profile:read',
       'user:read', 'dept:read', 'role:read',
       'audit:read', 'report:read', 'settings:read',
+      'dashboard:view', 'app:read', 'content:read',
     ],
   },
 ];

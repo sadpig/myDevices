@@ -24,10 +24,10 @@ export default function SettingsPage() {
       <Tabs defaultValue="users">
         <TabsList>
           <TabsTrigger value="users"><Users className="h-4 w-4 mr-1" />{t('settings.userManagement')}</TabsTrigger>
-          <TabsTrigger value="departments"><Building2 className="h-4 w-4 mr-1" />{t('settings.departmentManagement') || '部门管理'}</TabsTrigger>
-          <TabsTrigger value="roles"><Shield className="h-4 w-4 mr-1" />{t('settings.roleManagement') || '角色管理'}</TabsTrigger>
+          <TabsTrigger value="departments"><Building2 className="h-4 w-4 mr-1" />{t('settings.departmentManagement')}</TabsTrigger>
+          <TabsTrigger value="roles"><Shield className="h-4 w-4 mr-1" />{t('settings.roleManagement')}</TabsTrigger>
           <TabsTrigger value="apns">{t('settings.apnsCert')}</TabsTrigger>
-          <TabsTrigger value="smtp"><Mail className="h-4 w-4 mr-1" />{t('settings.smtpConfig') || '邮件配置'}</TabsTrigger>
+          <TabsTrigger value="smtp"><Mail className="h-4 w-4 mr-1" />{t('settings.smtpConfig')}</TabsTrigger>
         </TabsList>
         <TabsContent value="users"><UserManagement /></TabsContent>
         <TabsContent value="departments"><DepartmentManagement /></TabsContent>
@@ -95,7 +95,7 @@ function UserManagement() {
     try {
       const res = await api.post(`/api/auth/users/${userId}/reset-password`);
       setResetPwdResult(res.data.password);
-    } catch { setMessage('重置密码失败'); }
+    } catch { setMessage(t('settings.resetPasswordFailed')); }
   };
 
   const deleteTarget = users.find(u => u.id === deleteUserId);
@@ -109,12 +109,12 @@ function UserManagement() {
             <Input placeholder={t('settings.email')} type="email" required value={newUser.email} onChange={e => setNewUser(f => ({ ...f, email: e.target.value }))} />
             <Input placeholder={t('settings.name')} required value={newUser.name} onChange={e => setNewUser(f => ({ ...f, name: e.target.value }))} />
             <Input placeholder={t('settings.password')} type="password" required minLength={6} value={newUser.password} onChange={e => setNewUser(f => ({ ...f, password: e.target.value }))} />
-            <select className="border rounded-md px-3 py-2 text-sm" value={newUser.roleId} onChange={e => setNewUser(f => ({ ...f, roleId: e.target.value }))} required>
+            <select className="border rounded-md px-3 py-2 text-sm bg-background text-foreground" value={newUser.roleId} onChange={e => setNewUser(f => ({ ...f, roleId: e.target.value }))} required>
               <option value="">{t('settings.role')}</option>
               {roles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
             </select>
-            <select className="border rounded-md px-3 py-2 text-sm" value={newUser.departmentId} onChange={e => setNewUser(f => ({ ...f, departmentId: e.target.value }))}>
-              <option value="">{'部门（可选）'}</option>
+            <select className="border rounded-md px-3 py-2 text-sm bg-background text-foreground" value={newUser.departmentId} onChange={e => setNewUser(f => ({ ...f, departmentId: e.target.value }))}>
+              <option value="">{t('users.department')}</option>
               {flatDepts(depts).map(d => <option key={d.id} value={d.id}>{'　'.repeat(d.depth) + d.name}</option>)}
             </select>
             <Button type="submit" disabled={creating}>{creating ? t('settings.creating') : t('settings.createUser')}</Button>
@@ -132,7 +132,7 @@ function UserManagement() {
                 <th className="p-3 text-left">{t('settings.name')}</th>
                 <th className="p-3 text-left">{t('settings.email')}</th>
                 <th className="p-3 text-left">{t('settings.role')}</th>
-                <th className="p-3 text-left">{'部门'}</th>
+                <th className="p-3 text-left">{t('users.department')}</th>
                 <th className="p-3 text-left">{t('common.actions')}</th>
               </tr>
             </thead>
@@ -161,11 +161,11 @@ function UserManagement() {
           <DialogHeader><DialogTitle>{t('settings.editUser')}</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
             <Input value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} placeholder={t('settings.name')} />
-            <select className="w-full border rounded-md px-3 py-2 text-sm" value={editForm.roleId} onChange={e => setEditForm(f => ({ ...f, roleId: e.target.value }))}>
+            <select className="w-full border rounded-md px-3 py-2 text-sm bg-background text-foreground" value={editForm.roleId} onChange={e => setEditForm(f => ({ ...f, roleId: e.target.value }))}>
               {roles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
             </select>
-            <select className="w-full border rounded-md px-3 py-2 text-sm" value={editForm.departmentId} onChange={e => setEditForm(f => ({ ...f, departmentId: e.target.value }))}>
-              <option value="">{'无部门'}</option>
+            <select className="w-full border rounded-md px-3 py-2 text-sm bg-background text-foreground" value={editForm.departmentId} onChange={e => setEditForm(f => ({ ...f, departmentId: e.target.value }))}>
+              <option value="">{t('users.noDepartment')}</option>
               {flatDepts(depts).map(d => <option key={d.id} value={d.id}>{'　'.repeat(d.depth) + d.name}</option>)}
             </select>
           </div>
@@ -191,9 +191,9 @@ function UserManagement() {
       {/* Reset Password Result Dialog */}
       <Dialog open={!!resetPwdResult} onOpenChange={o => { if (!o) setResetPwdResult(null); }}>
         <DialogContent>
-          <DialogHeader><DialogTitle>{'密码已重置'}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t('settings.resetPassword')}</DialogTitle></DialogHeader>
           <div className="py-4">
-            <p className="text-sm mb-2">{'新密码（请妥善保管）：'}</p>
+            <p className="text-sm mb-2">{t('settings.resetPasswordResult')}</p>
             <code className="block p-3 bg-muted rounded text-lg font-mono select-all">{resetPwdResult}</code>
           </div>
           <DialogFooter><Button onClick={() => setResetPwdResult(null)}>{t('common.confirm')}</Button></DialogFooter>
@@ -235,7 +235,7 @@ function DepartmentManagement() {
     try {
       await api.post('/api/departments', { ...addForm, parentId: addForm.parentId || undefined });
       load(); setAddOpen(false); setAddForm({ name: '', code: '', parentId: '', sortOrder: 0 });
-    } catch (e: any) { setError(e.response?.data?.error || '创建失败'); }
+    } catch (e: any) { setError(e.response?.data?.error || t('settings.createFailed')); }
   };
 
   const handleEdit = async () => {
@@ -244,12 +244,12 @@ function DepartmentManagement() {
     try {
       await api.put(`/api/departments/${editDept.id}`, { ...editForm, parentId: editForm.parentId || null });
       load(); setEditDept(null);
-    } catch (e: any) { setError(e.response?.data?.error || '更新失败'); }
+    } catch (e: any) { setError(e.response?.data?.error || t('settings.editFailed')); }
   };
 
   const handleDelete = async () => {
     if (!deleteDeptId) return;
-    try { await api.delete(`/api/departments/${deleteDeptId}`); load(); } catch (e: any) { setError(e.response?.data?.error || '删除失败'); }
+    try { await api.delete(`/api/departments/${deleteDeptId}`); load(); } catch (e: any) { setError(e.response?.data?.error || t('settings.deleteFailed')); }
     setDeleteDeptId(null);
   };
 
@@ -263,7 +263,7 @@ function DepartmentManagement() {
             {hasChildren ? (isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />) : <span className="w-4" />}
           </button>
           <span className="flex-1 text-sm font-medium">{node.name}</span>
-          <span className="text-xs text-muted-foreground mr-4">{node._count?.users || 0} 人</span>
+          <span className="text-xs text-muted-foreground mr-4">{t('departments.userCount', { count: node._count?.users || 0 })}</span>
           <Button variant="ghost" size="sm" onClick={() => { setEditDept(node); setEditForm({ name: node.name, code: node.code, parentId: node.parentId || '', sortOrder: node.sortOrder }); }}><Pencil className="h-3 w-3" /></Button>
           <Button variant="ghost" size="sm" onClick={() => setDeleteDeptId(node.id)}><Trash2 className="h-3 w-3" /></Button>
         </div>
@@ -277,38 +277,38 @@ function DepartmentManagement() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium">{'部门管理'}</h3>
-        <Button size="sm" onClick={() => setAddOpen(true)}><Plus className="h-4 w-4 mr-1" />{'添加部门'}</Button>
+        <h3 className="text-lg font-medium">{t('departments.title')}</h3>
+        <Button size="sm" onClick={() => setAddOpen(true)}><Plus className="h-4 w-4 mr-1" />{t('departments.add')}</Button>
       </div>
       {error && <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md">{error}</div>}
       <Card>
         <CardContent className="p-2">
-          {tree.length === 0 ? <p className="text-sm text-muted-foreground p-4 text-center">{'暂无部门'}</p> : tree.map(n => renderNode(n, 0))}
+          {tree.length === 0 ? <p className="text-sm text-muted-foreground p-4 text-center">{t('departments.empty')}</p> : tree.map(n => renderNode(n, 0))}
         </CardContent>
       </Card>
 
       {/* Add Dialog */}
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>{'添加部门'}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t('departments.add')}</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <label className="text-sm font-medium">{'部门名称'}</label>
+              <label className="text-sm font-medium">{t('departments.name')}</label>
               <Input value={addForm.name} onChange={e => setAddForm(f => ({ ...f, name: e.target.value }))} />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">{'部门编码'}</label>
+              <label className="text-sm font-medium">{t('departments.code')}</label>
               <Input value={addForm.code} onChange={e => setAddForm(f => ({ ...f, code: e.target.value }))} placeholder="如: tech-dept" />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">{'上级部门'}</label>
-              <select className="w-full border rounded-md px-3 py-2 text-sm" value={addForm.parentId} onChange={e => setAddForm(f => ({ ...f, parentId: e.target.value }))}>
-                <option value="">{'无（顶级部门）'}</option>
+              <label className="text-sm font-medium">{t('departments.parent')}</label>
+              <select className="w-full border rounded-md px-3 py-2 text-sm bg-background text-foreground" value={addForm.parentId} onChange={e => setAddForm(f => ({ ...f, parentId: e.target.value }))}>
+                <option value="">{t('departments.none')}</option>
                 {allFlat.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
               </select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">{'排序'}</label>
+              <label className="text-sm font-medium">{t('departments.sortOrder')}</label>
               <Input type="number" value={addForm.sortOrder} onChange={e => setAddForm(f => ({ ...f, sortOrder: parseInt(e.target.value) || 0 }))} />
             </div>
           </div>
@@ -322,25 +322,25 @@ function DepartmentManagement() {
       {/* Edit Dialog */}
       <Dialog open={!!editDept} onOpenChange={o => { if (!o) setEditDept(null); }}>
         <DialogContent>
-          <DialogHeader><DialogTitle>{'编辑部门'}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t('departments.edit')}</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <label className="text-sm font-medium">{'部门名称'}</label>
+              <label className="text-sm font-medium">{t('departments.name')}</label>
               <Input value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">{'部门编码'}</label>
+              <label className="text-sm font-medium">{t('departments.code')}</label>
               <Input value={editForm.code} onChange={e => setEditForm(f => ({ ...f, code: e.target.value }))} />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">{'上级部门'}</label>
-              <select className="w-full border rounded-md px-3 py-2 text-sm" value={editForm.parentId} onChange={e => setEditForm(f => ({ ...f, parentId: e.target.value }))}>
-                <option value="">{'无（顶级部门）'}</option>
+              <label className="text-sm font-medium">{t('departments.parent')}</label>
+              <select className="w-full border rounded-md px-3 py-2 text-sm bg-background text-foreground" value={editForm.parentId} onChange={e => setEditForm(f => ({ ...f, parentId: e.target.value }))}>
+                <option value="">{t('departments.none')}</option>
                 {allFlat.filter(d => d.id !== editDept?.id).map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
               </select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">{'排序'}</label>
+              <label className="text-sm font-medium">{t('departments.sortOrder')}</label>
               <Input type="number" value={editForm.sortOrder} onChange={e => setEditForm(f => ({ ...f, sortOrder: parseInt(e.target.value) || 0 }))} />
             </div>
           </div>
@@ -355,7 +355,7 @@ function DepartmentManagement() {
       <Dialog open={!!deleteDeptId} onOpenChange={o => { if (!o) setDeleteDeptId(null); }}>
         <DialogContent>
           <DialogHeader><DialogTitle>{t('common.confirmDelete')}</DialogTitle></DialogHeader>
-          <p className="text-sm py-2">{'确定要删除此部门吗？'}</p>
+          <p className="text-sm py-2">{t('departments.deleteConfirm')}</p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteDeptId(null)}>{t('common.cancel')}</Button>
             <Button variant="destructive" onClick={handleDelete}>{t('common.delete')}</Button>
@@ -387,10 +387,10 @@ function RoleManagement() {
   useEffect(() => { load(); }, [load]);
 
   const DATA_SCOPES = [
-    { value: 'all', label: '全部数据' },
-    { value: 'department_and_children', label: '本部门及子部门' },
-    { value: 'department', label: '仅本部门' },
-    { value: 'self', label: '仅本人' },
+    { value: 'all', label: t('roles.dataScope.all') },
+    { value: 'department_and_children', label: t('roles.dataScope.department_and_children') },
+    { value: 'department', label: t('roles.dataScope.department') },
+    { value: 'self', label: t('roles.dataScope.self') },
   ];
 
   const togglePerm = (permId: string, form: any, setForm: any) => {
@@ -425,7 +425,7 @@ function RoleManagement() {
     try {
       await api.post('/api/roles', addForm);
       load(); setAddOpen(false); setAddForm({ name: '', code: '', description: '', dataScope: 'self', permissionIds: [] });
-    } catch (e: any) { setError(e.response?.data?.error || '创建失败'); }
+    } catch (e: any) { setError(e.response?.data?.error || t('settings.createFailed')); }
   };
 
   const handleEdit = async () => {
@@ -434,20 +434,20 @@ function RoleManagement() {
     try {
       await api.put(`/api/roles/${editRole.id}`, editForm);
       load(); setEditRole(null);
-    } catch (e: any) { setError(e.response?.data?.error || '更新失败'); }
+    } catch (e: any) { setError(e.response?.data?.error || t('settings.editFailed')); }
   };
 
   const handleDelete = async () => {
     if (!deleteRoleId) return;
-    try { await api.delete(`/api/roles/${deleteRoleId}`); load(); } catch (e: any) { setError(e.response?.data?.error || '删除失败'); }
+    try { await api.delete(`/api/roles/${deleteRoleId}`); load(); } catch (e: any) { setError(e.response?.data?.error || t('settings.deleteFailed')); }
     setDeleteRoleId(null);
   };
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium">{'角色管理'}</h3>
-        <Button size="sm" onClick={() => setAddOpen(true)}><Plus className="h-4 w-4 mr-1" />{'添加角色'}</Button>
+        <h3 className="text-lg font-medium">{t('roles.title')}</h3>
+        <Button size="sm" onClick={() => setAddOpen(true)}><Plus className="h-4 w-4 mr-1" />{t('roles.add')}</Button>
       </div>
       {error && <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md">{error}</div>}
       <Card>
@@ -455,17 +455,17 @@ function RoleManagement() {
           <table className="w-full text-sm">
             <thead className="border-b bg-muted/30">
               <tr>
-                <th className="p-3 text-left">{'名称'}</th>
-                <th className="p-3 text-left">{'编码'}</th>
-                <th className="p-3 text-left">{'数据范围'}</th>
-                <th className="p-3 text-left">{'用户数'}</th>
+                <th className="p-3 text-left">{t('roles.name')}</th>
+                <th className="p-3 text-left">{t('roles.code')}</th>
+                <th className="p-3 text-left">{t('roles.dataScope')}</th>
+                <th className="p-3 text-left">{t('roles.userCount')}</th>
                 <th className="p-3 text-left">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody>
               {roles.map(r => (
                 <tr key={r.id} className="border-b">
-                  <td className="p-3 font-medium">{r.name} {r.isSystem && <Badge variant="secondary" className="ml-1 text-xs">{'系统'}</Badge>}</td>
+                  <td className="p-3 font-medium">{r.name} {r.isSystem && <Badge variant="secondary" className="ml-1 text-xs">{t('roles.builtIn')}</Badge>}</td>
                   <td className="p-3 text-muted-foreground">{r.code}</td>
                   <td className="p-3"><Badge variant="outline">{DATA_SCOPES.find(s => s.value === r.dataScope)?.label || r.dataScope}</Badge></td>
                   <td className="p-3">{r._count?.users || 0}</td>
@@ -483,30 +483,30 @@ function RoleManagement() {
       {/* Add Role Dialog */}
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{'添加角色'}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t('roles.addTitle')}</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">{'角色名称'}</label>
+                <label className="text-sm font-medium">{t('roles.name')}</label>
                 <Input value={addForm.name} onChange={e => setAddForm(f => ({ ...f, name: e.target.value }))} />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">{'角色编码'}</label>
-                <Input value={addForm.code} onChange={e => setAddForm(f => ({ ...f, code: e.target.value }))} placeholder="如: editor" />
+                <label className="text-sm font-medium">{t('roles.code')}</label>
+                <Input value={addForm.code} onChange={e => setAddForm(f => ({ ...f, code: e.target.value }))} placeholder="e.g. editor" />
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">{'描述'}</label>
+              <label className="text-sm font-medium">{t('roles.description')}</label>
               <Input value={addForm.description} onChange={e => setAddForm(f => ({ ...f, description: e.target.value }))} />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">{'数据范围'}</label>
-              <select className="w-full border rounded-md px-3 py-2 text-sm" value={addForm.dataScope} onChange={e => setAddForm(f => ({ ...f, dataScope: e.target.value }))}>
+              <label className="text-sm font-medium">{t('roles.dataScope')}</label>
+              <select className="w-full border rounded-md px-3 py-2 text-sm bg-background text-foreground" value={addForm.dataScope} onChange={e => setAddForm(f => ({ ...f, dataScope: e.target.value }))}>
                 {DATA_SCOPES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
               </select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">{'权限'}</label>
+              <label className="text-sm font-medium">{t('roles.permissions')}</label>
               <PermMatrix form={addForm} setForm={setAddForm} />
             </div>
           </div>
@@ -520,30 +520,30 @@ function RoleManagement() {
       {/* Edit Role Dialog */}
       <Dialog open={!!editRole} onOpenChange={o => { if (!o) setEditRole(null); }}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{'编辑角色'}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t('roles.editTitle')}</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">{'角色名称'}</label>
+                <label className="text-sm font-medium">{t('roles.name')}</label>
                 <Input value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} disabled={editRole?.isSystem} />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">{'角色编码'}</label>
+                <label className="text-sm font-medium">{t('roles.code')}</label>
                 <Input value={editForm.code} onChange={e => setEditForm(f => ({ ...f, code: e.target.value }))} disabled={editRole?.isSystem} />
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">{'描述'}</label>
+              <label className="text-sm font-medium">{t('roles.description')}</label>
               <Input value={editForm.description} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">{'数据范围'}</label>
-              <select className="w-full border rounded-md px-3 py-2 text-sm" value={editForm.dataScope} onChange={e => setEditForm(f => ({ ...f, dataScope: e.target.value }))}>
+              <label className="text-sm font-medium">{t('roles.dataScope')}</label>
+              <select className="w-full border rounded-md px-3 py-2 text-sm bg-background text-foreground" value={editForm.dataScope} onChange={e => setEditForm(f => ({ ...f, dataScope: e.target.value }))}>
                 {DATA_SCOPES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
               </select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">{'权限'}</label>
+              <label className="text-sm font-medium">{t('roles.permissions')}</label>
               <PermMatrix form={editForm} setForm={setEditForm} />
             </div>
           </div>
@@ -558,7 +558,7 @@ function RoleManagement() {
       <Dialog open={!!deleteRoleId} onOpenChange={o => { if (!o) setDeleteRoleId(null); }}>
         <DialogContent>
           <DialogHeader><DialogTitle>{t('common.confirmDelete')}</DialogTitle></DialogHeader>
-          <p className="text-sm py-2">{'确定要删除此角色吗？'}</p>
+          <p className="text-sm py-2">{t('roles.deleteConfirm')}</p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteRoleId(null)}>{t('common.cancel')}</Button>
             <Button variant="destructive" onClick={handleDelete}>{t('common.delete')}</Button>
@@ -660,39 +660,49 @@ function SmtpSettings() {
 
   return (
     <Card>
-      <CardHeader><CardTitle>{'邮件服务器配置 (SMTP)'}</CardTitle></CardHeader>
+      <CardHeader><CardTitle>{t('smtp.title')}</CardTitle></CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">{'SMTP 主机'}</label>
+            <label className="text-sm font-medium">{t('smtp.host')}</label>
             <Input value={form.host} onChange={e => setForm(f => ({ ...f, host: e.target.value }))} placeholder="smtp.example.com" />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">{'端口'}</label>
+            <label className="text-sm font-medium">{t('smtp.port')}</label>
             <Input value={form.port} onChange={e => setForm(f => ({ ...f, port: e.target.value }))} placeholder="587" />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">{'用户名'}</label>
+            <label className="text-sm font-medium">{t('smtp.username')}</label>
             <Input value={form.user} onChange={e => setForm(f => ({ ...f, user: e.target.value }))} placeholder="user@example.com" />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">{'密码'}</label>
+            <label className="text-sm font-medium">{t('smtp.password')}</label>
             <Input type="password" value={form.pass} onChange={e => setForm(f => ({ ...f, pass: e.target.value }))} placeholder="••••••" />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">{'发件人地址'}</label>
+            <label className="text-sm font-medium">{t('smtp.from')}</label>
             <Input value={form.from} onChange={e => setForm(f => ({ ...f, from: e.target.value }))} placeholder="noreply@example.com" />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">{'SSL/TLS'}</label>
+            <label className="text-sm font-medium">{t('smtp.ssl')}</label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" checked={form.secure === 'true'} onChange={e => setForm(f => ({ ...f, secure: e.target.checked ? 'true' : 'false' }))} className="rounded" />
-              <span className="text-sm">{'启用安全连接'}</span>
+              <span className="text-sm">{t('smtp.enableSecure')}</span>
             </label>
           </div>
         </div>
         {msg && <div className={`p-3 text-sm rounded-md ${msg === t('settings.saveSuccess') ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>{msg}</div>}
-        <Button onClick={save} disabled={saving}><Save className="h-4 w-4 mr-2" />{saving ? t('settings.saving') : t('settings.saveConfig')}</Button>
+        <div className="flex gap-2">
+          <Button onClick={save} disabled={saving}><Save className="h-4 w-4 mr-2" />{saving ? t('settings.saving') : t('settings.saveConfig')}</Button>
+          <Button variant="outline" onClick={async () => {
+            try {
+              await api.post('/api/settings/smtp/test');
+              setMsg(t('smtp.testSuccess'));
+            } catch { setMsg(t('smtp.testFailed')); }
+          }} disabled={saving}>
+            <Mail className="h-4 w-4 mr-2" />{t('smtp.testEmail')}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

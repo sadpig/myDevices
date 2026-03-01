@@ -43,7 +43,7 @@ export default function DevicesPage() {
 
       <div className="flex gap-4">
         <Input placeholder={t('devices.searchPlaceholder') + ' / UDID'} value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} className="max-w-sm" />
-        <select value={deviceType} onChange={e => { setDeviceType(e.target.value); setPage(1); }} className="border rounded-md px-3 py-2 text-sm">
+        <select value={deviceType} onChange={e => { setDeviceType(e.target.value); setPage(1); }} className="border rounded-md px-3 py-2 text-sm bg-background text-foreground">
           <option value="">{t('common.allTypes')}</option>
           {DEVICE_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
         </select>

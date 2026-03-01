@@ -101,7 +101,7 @@ export default function NewProfilePage() {
                     setForm(f => ({ ...f, payloadType: tpl.payloadType, payload: JSON.stringify(tpl.payload, null, 2) }));
                   }
                 }}
-                className="w-full border rounded-md px-3 py-2 text-sm"
+                className="w-full border rounded-md px-3 py-2 text-sm bg-background text-foreground"
               >
                 <option value="">{'选择模板...'}</option>
                 <option value="wifi">WiFi</option>
@@ -137,7 +137,7 @@ export default function NewProfilePage() {
               <select
                 value={form.payloadType}
                 onChange={e => set('payloadType', e.target.value)}
-                className="w-full border rounded-md px-3 py-2 text-sm"
+                className="w-full border rounded-md px-3 py-2 text-sm bg-background text-foreground"
               >
                 {PAYLOAD_TYPES.map(pt => <option key={pt} value={pt}>{pt}</option>)}
               </select>

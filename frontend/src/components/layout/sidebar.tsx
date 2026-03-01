@@ -4,7 +4,8 @@ import { usePathname } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import {
   LayoutDashboard, Smartphone, Package, Shield,
-  ScrollText, BarChart3, Settings, Building2, Users, UserCog
+  ScrollText, BarChart3, Settings, Building2, Users, UserCog,
+  AppWindow, FileText
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
@@ -34,6 +35,8 @@ const navGroups: NavGroup[] = [
       { href: '/devices', labelKey: 'sidebar.devices', icon: Smartphone, permission: 'device:read' },
       { href: '/assets', labelKey: 'sidebar.assets', icon: Package, permission: 'asset:read' },
       { href: '/profiles', labelKey: 'sidebar.profiles', icon: Shield, permission: 'profile:read' },
+      { href: '/apps', labelKey: 'sidebar.apps', icon: AppWindow, permission: 'app:read' },
+      { href: '/contents', labelKey: 'sidebar.contents', icon: FileText, permission: 'content:read' },
     ],
   },
   {

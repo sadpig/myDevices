@@ -15,6 +15,21 @@ const reportRoutes: FastifyPluginAsync = async (fastify) => {
     return reportService.assetStats();
   });
 
+  fastify.get('/dashboard-stats', async () => {
+    const [deviceStats, assetStats] = await Promise.all([
+      reportService.deviceStats(),
+      reportService.assetStats(),
+    ]);
+    // Asset by department with names
+    const departments = await fastify.prisma.department.findMany({ select: { id: true, name: true } });
+    const deptMap = Object.fromEntries(departments.map((d: { id: string; name: string }) => [d.id, d.name]));
+    const assetByDept = (assetStats.byDepartment || []).map((d: any) => ({
+      name: deptMap[d.departmentId] || d.departmentId || 'Unassigned',
+      value: d._count,
+    }));
+    return { deviceStats, assetStats, assetByDept };
+  });
+
   fastify.get('/compliance', async () => {
     return reportService.compliance();
   });

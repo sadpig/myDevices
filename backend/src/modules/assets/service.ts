@@ -1,5 +1,7 @@
 import { PrismaClient, AssetStatus } from '@prisma/client';
 import { NotificationService } from '../../services/notification.js';
+import { emailTemplates } from '../../services/email-templates.js';
+import { AssetHistoryService } from './history-service.js';
 
 interface AssetFilters {
   status?: AssetStatus;
@@ -76,18 +78,29 @@ export class AssetService {
     if (data.assignedToId) {
       const notifService = new NotificationService(this.prisma);
       const device = asset.device;
-      await notifService.createAndEmail(
-        data.assignedToId,
-        '资产分配通知',
-        `您已被分配设备: ${device?.deviceName || device?.serialNumber || data.deviceId}`,
-        'asset_assigned'
-      );
+      const tmpl = emailTemplates.assetAssigned({
+        userName: asset.assignedUser?.name || '',
+        deviceName: device?.deviceName || device?.serialNumber || '',
+        serialNumber: device?.serialNumber || '',
+      });
+      await notifService.createAndEmail(data.assignedToId, tmpl.subject, tmpl.html, 'asset_assigned');
     }
+
+    // Record history
+    const historyService = new AssetHistoryService(this.prisma);
+    await historyService.record(asset.id, 'created', {
+      toUserId: data.assignedToId || null,
+      toStatus: data.status || 'in_stock',
+    });
 
     return asset;
   }
 
   async update(id: string, data: Partial<{ purchaseDate: string; purchasePrice: number; warrantyEnd: string; assignedToId: string; departmentId: string; location: string; status: AssetStatus; notes: string }>) {
+    const oldAsset = await this.prisma.asset.findUnique({
+      where: { id }, select: { assignedToId: true, status: true },
+    });
+
     const updateData: any = { ...data };
     if (data.purchaseDate) updateData.purchaseDate = new Date(data.purchaseDate);
     if (data.warrantyEnd) updateData.warrantyEnd = new Date(data.warrantyEnd);
@@ -101,15 +114,43 @@ export class AssetService {
       },
     });
 
-    if (data.assignedToId) {
-      const notifService = new NotificationService(this.prisma);
-      const device = asset.device;
-      await notifService.createAndEmail(
-        data.assignedToId,
-        '资产分配通知',
-        `您已被分配设备: ${device?.deviceName || device?.serialNumber || id}`,
-        'asset_assigned'
-      );
+    const notifService = new NotificationService(this.prisma);
+    const device = asset.device;
+
+    // Notify on assignment change
+    if (data.assignedToId && data.assignedToId !== oldAsset?.assignedToId) {
+      const tmpl = emailTemplates.assetAssigned({
+        userName: asset.assignedUser?.name || '',
+        deviceName: device?.deviceName || device?.serialNumber || '',
+        serialNumber: device?.serialNumber || '',
+      });
+      await notifService.createAndEmail(data.assignedToId, tmpl.subject, tmpl.html, 'asset_assigned');
+    }
+
+    // Notify on status change to lost/retired
+    if (data.status && ['lost', 'retired'].includes(data.status) && oldAsset?.assignedToId) {
+      const tmpl = emailTemplates.assetStatusChanged({
+        userName: asset.assignedUser?.name || '',
+        deviceName: device?.deviceName || device?.serialNumber || '',
+        oldStatus: oldAsset.status || '',
+        newStatus: data.status,
+      });
+      await notifService.createAndEmail(oldAsset.assignedToId, tmpl.subject, tmpl.html, 'asset_status_changed');
+    }
+
+    // Record history for assignment/status changes
+    const historyService = new AssetHistoryService(this.prisma);
+    if (data.assignedToId && data.assignedToId !== oldAsset?.assignedToId) {
+      await historyService.record(id, 'assigned', {
+        fromUserId: oldAsset?.assignedToId || null,
+        toUserId: data.assignedToId,
+      });
+    }
+    if (data.status && data.status !== oldAsset?.status) {
+      await historyService.record(id, 'status_changed', {
+        fromStatus: oldAsset?.status || null,
+        toStatus: data.status,
+      });
     }
 
     return asset;

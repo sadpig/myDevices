@@ -232,7 +232,7 @@ export default function ProfileDetailPage() {
               <select
                 value={editForm.payloadType}
                 onChange={e => setEditForm(f => ({ ...f, payloadType: e.target.value }))}
-                className="w-full border rounded-md px-3 py-2 text-sm"
+                className="w-full border rounded-md px-3 py-2 text-sm bg-background text-foreground"
               >
                 {PAYLOAD_TYPES.map(pt => <option key={pt} value={pt}>{pt}</option>)}
               </select>

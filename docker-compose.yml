@@ -43,11 +43,19 @@ services:
       APNS_KEY_PATH: ${APNS_KEY_PATH:-}
       APNS_TOPIC: ${APNS_TOPIC:-}
       MDM_SERVER_URL: ${MDM_SERVER_URL:-http://localhost:3001}
+    volumes:
+      - uploads:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   frontend:
     build:
@@ -64,3 +72,4 @@ services:
 volumes:
   pgdata:
   redisdata:
+  uploads:

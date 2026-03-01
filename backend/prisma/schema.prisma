@@ -89,7 +89,9 @@ model Device {
   updatedAt        DateTime         @updatedAt @map("updated_at")
   asset            Asset?
   commands         MDMCommand[]
-  profiles         DeviceProfile[]
+  profiles           DeviceProfile[]
+  appAssignments     AppAssignment[]
+  contentAssignments ContentAssignment[]
 
   @@index([enrollmentStatus])
   @@index([deviceType])
@@ -111,7 +113,9 @@ model Asset {
   updatedAt     DateTime    @updatedAt @map("updated_at")
   device        Device      @relation(fields: [deviceId], references: [id], onDelete: Cascade)
   department    Department? @relation(fields: [departmentId], references: [id])
-  assignedUser  User?       @relation("AssetAssignee", fields: [assignedToId], references: [id])
+  assignedUser       User?               @relation("AssetAssignee", fields: [assignedToId], references: [id])
+  histories          AssetHistory[]
+  maintenanceRecords MaintenanceRecord[]
 
   @@map("assets")
 }
@@ -169,8 +173,10 @@ model Department {
   updatedAt DateTime     @updatedAt @map("updated_at")
   parent    Department?  @relation("DeptTree", fields: [parentId], references: [id])
   children  Department[] @relation("DeptTree")
-  users     User[]
-  assets    Asset[]
+  users              User[]
+  assets             Asset[]
+  appAssignments     AppAssignment[]
+  contentAssignments ContentAssignment[]
 
   @@map("departments")
 }
@@ -240,4 +246,103 @@ model Notification {
 
   @@index([userId, read])
   @@map("notifications")
+}
+
+model SystemSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt @map("updated_at")
+  @@map("system_settings")
+}
+
+model AssetHistory {
+  id         String   @id @default(uuid())
+  assetId    String   @map("asset_id")
+  action     String
+  fromUserId String?  @map("from_user_id")
+  toUserId   String?  @map("to_user_id")
+  fromStatus String?  @map("from_status")
+  toStatus   String?  @map("to_status")
+  details    Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+  asset      Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  @@index([assetId])
+  @@map("asset_histories")
+}
+
+model MaintenanceRecord {
+  id        String    @id @default(uuid())
+  assetId   String    @map("asset_id")
+  reason    String
+  vendor    String?
+  cost      Decimal?  @db.Decimal(10, 2)
+  startDate DateTime  @map("start_date")
+  endDate   DateTime? @map("end_date")
+  notes     String?
+  createdAt DateTime  @default(now()) @map("created_at")
+  asset     Asset     @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  @@index([assetId])
+  @@map("maintenance_records")
+}
+
+model App {
+  id         String          @id @default(uuid())
+  bundleId   String          @unique @map("bundle_id")
+  name       String
+  version    String?
+  icon       String?
+  size       BigInt?
+  category   String?
+  managedApp Boolean         @default(true) @map("managed_app")
+  source     String?
+  createdAt  DateTime        @default(now()) @map("created_at")
+  updatedAt  DateTime        @updatedAt @map("updated_at")
+  assignments AppAssignment[]
+  @@map("apps")
+}
+
+model AppAssignment {
+  id           String      @id @default(uuid())
+  appId        String      @map("app_id")
+  deviceId     String?     @map("device_id")
+  departmentId String?     @map("department_id")
+  status       String      @default("pending")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+  app          App         @relation(fields: [appId], references: [id], onDelete: Cascade)
+  device       Device?     @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  department   Department? @relation(fields: [departmentId], references: [id])
+  @@index([appId])
+  @@index([deviceId])
+  @@map("app_assignments")
+}
+
+model Content {
+  id          String              @id @default(uuid())
+  name        String
+  type        String
+  fileUrl     String?             @map("file_url")
+  fileSize    BigInt?             @map("file_size")
+  description String?
+  version     String?
+  createdAt   DateTime            @default(now()) @map("created_at")
+  updatedAt   DateTime            @updatedAt @map("updated_at")
+  assignments ContentAssignment[]
+  @@map("contents")
+}
+
+model ContentAssignment {
+  id           String      @id @default(uuid())
+  contentId    String      @map("content_id")
+  deviceId     String?     @map("device_id")
+  departmentId String?     @map("department_id")
+  status       String      @default("pending")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+  content      Content     @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  device       Device?     @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  department   Department? @relation(fields: [departmentId], references: [id])
+  @@index([contentId])
+  @@index([deviceId])
+  @@map("content_assignments")
 }

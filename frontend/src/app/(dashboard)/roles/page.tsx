@@ -289,7 +289,7 @@ export default function RolesPage() {
               <select
                 value={form.dataScope}
                 onChange={e => setForm(f => ({ ...f, dataScope: e.target.value }))}
-                className="w-full border rounded-md px-3 py-2 text-sm"
+                className="w-full border rounded-md px-3 py-2 text-sm bg-background text-foreground"
               >
                 {Object.entries(DATA_SCOPE_LABELS).map(([value, label]) => (
                   <option key={value} value={value}>{label}</option>
