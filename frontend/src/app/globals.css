@@ -152,4 +152,17 @@
       radial-gradient(ellipse at 50% 80%, oklch(0.3 0.04 330 / 10%) 0%, transparent 50%),
       var(--background);
   }
+
+  /* Smooth theme transitions */
+  *, *::before, *::after {
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease;
+  }
+
+  /* Selection color matching theme */
+  ::selection {
+    background: oklch(0.55 0.2 265 / 30%);
+  }
+  .dark ::selection {
+    background: oklch(0.7 0.18 265 / 30%);
+  }
 }
