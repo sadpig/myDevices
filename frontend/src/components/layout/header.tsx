@@ -7,12 +7,14 @@ import { ThemeToggle } from './theme-toggle';
 import { LanguageToggle } from './language-toggle';
 import api from '@/lib/api';
 
-interface HeaderProps {
+export interface HeaderProps {
   onLogout: () => void;
   userName?: string;
+  userRole?: string;
+  userDepartment?: string;
 }
 
-export function Header({ onLogout, userName }: HeaderProps) {
+export function Header({ onLogout, userName, userRole, userDepartment }: HeaderProps) {
   const { t } = useTranslation();
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifs, setShowNotifs] = useState(false);

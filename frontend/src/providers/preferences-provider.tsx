@@ -17,7 +17,7 @@ export const usePreferences = () => useContext(PreferencesContext);
 export function PreferencesProvider({ children }: { children: React.ReactNode }) {
   const { setTheme } = useTheme();
   const { i18n } = useTranslation();
-  const debounceRef = useRef<NodeJS.Timeout>();
+  const debounceRef = useRef<NodeJS.Timeout>(undefined);
 
   useEffect(() => {
     const token = localStorage.getItem('token');

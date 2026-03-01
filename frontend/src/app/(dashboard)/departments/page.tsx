@@ -53,6 +53,7 @@ function DeptNode({
   onDelete: (node: Department) => void;
   canWrite: boolean;
 }) {
+  const { t } = useTranslation();
   const isExpanded = expanded.has(node.id);
   const hasChildren = node.children && node.children.length > 0;
 
