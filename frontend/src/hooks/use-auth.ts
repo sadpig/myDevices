@@ -8,6 +8,10 @@ interface User {
   email: string;
   name: string;
   role: string;
+  preferences?: {
+    theme?: string;
+    language?: string;
+  };
 }
 
 export function useAuth() {
