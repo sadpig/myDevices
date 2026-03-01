@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,14 +9,19 @@ import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveCo
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
-const assetStatusLabels: Record<string, string> = {
-  in_use: '使用中', in_stock: '库存', repairing: '维修中', retired: '已退役', lost: '丢失',
-};
-
 export default function ReportsPage() {
+  const { t } = useTranslation();
   const [deviceStats, setDeviceStats] = useState<any>(null);
   const [assetStats, setAssetStats] = useState<any>(null);
   const [compliance, setCompliance] = useState<any>(null);
+
+  const assetStatusLabels: Record<string, string> = {
+    in_use: t('assetStatus.in_use'),
+    in_stock: t('assetStatus.in_stock'),
+    repairing: t('assetStatus.repairing'),
+    retired: t('assetStatus.retired'),
+    lost: t('assetStatus.lost'),
+  };
 
   const downloadCsv = async (type: 'devices' | 'assets') => {
     try {
@@ -27,7 +33,7 @@ export default function ReportsPage() {
       a.click();
       window.URL.revokeObjectURL(url);
     } catch {
-      alert('导出失败');
+      alert(t('common.exportFailed'));
     }
   };
 
@@ -39,20 +45,20 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">报表中心</h1>
+      <h1 className="text-2xl font-bold">{t('reports.title')}</h1>
 
       {compliance && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">MDM 注册率</CardTitle></CardHeader>
+            <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">{t('reports.mdmEnrollRate')}</CardTitle></CardHeader>
             <CardContent><div className="text-3xl font-bold text-green-600">{compliance.enrollmentRate}%</div><p className="text-xs text-muted-foreground">{compliance.enrolled} / {compliance.totalDevices}</p></CardContent>
           </Card>
           <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">监管率</CardTitle></CardHeader>
+            <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">{t('reports.supervisionRate')}</CardTitle></CardHeader>
             <CardContent><div className="text-3xl font-bold text-blue-600">{compliance.supervisionRate}%</div><p className="text-xs text-muted-foreground">{compliance.supervised} / {compliance.totalDevices}</p></CardContent>
           </Card>
           <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">资产覆盖率</CardTitle></CardHeader>
+            <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">{t('reports.assetCoverageRate')}</CardTitle></CardHeader>
             <CardContent><div className="text-3xl font-bold text-purple-600">{compliance.assetCoverage}%</div><p className="text-xs text-muted-foreground">{compliance.withAsset} / {compliance.totalDevices}</p></CardContent>
           </Card>
         </div>
@@ -60,18 +66,18 @@ export default function ReportsPage() {
 
       <Tabs defaultValue="devices">
         <TabsList>
-          <TabsTrigger value="devices">设备报表</TabsTrigger>
-          <TabsTrigger value="assets">资产报表</TabsTrigger>
+          <TabsTrigger value="devices">{t('reports.deviceReport')}</TabsTrigger>
+          <TabsTrigger value="assets">{t('reports.assetReport')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="devices" className="space-y-4">
           <div className="flex items-center justify-between">
-            <CardTitle>设备统计</CardTitle>
-            <Button variant="outline" size="sm" onClick={() => downloadCsv('devices')}>导出 CSV</Button>
+            <CardTitle>{t('reports.deviceStats')}</CardTitle>
+            <Button variant="outline" size="sm" onClick={() => downloadCsv('devices')}>{t('common.exportCsv')}</Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
-              <CardHeader><CardTitle>设备类型分布</CardTitle></CardHeader>
+              <CardHeader><CardTitle>{t('reports.deviceTypeDistribution')}</CardTitle></CardHeader>
               <CardContent className="h-64">
                 {deviceStats?.byType && (
                   <ResponsiveContainer width="100%" height="100%">
@@ -86,11 +92,11 @@ export default function ReportsPage() {
               </CardContent>
             </Card>
             <Card>
-              <CardHeader><CardTitle>系统版本分布 (Top 10)</CardTitle></CardHeader>
+              <CardHeader><CardTitle>{t('reports.osVersionDistribution')}</CardTitle></CardHeader>
               <CardContent className="h-64">
                 {deviceStats?.byOS && (
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={deviceStats.byOS.map((d: any) => ({ name: d.osVersion || '未知', value: d._count }))}>
+                    <BarChart data={deviceStats.byOS.map((d: any) => ({ name: d.osVersion || t('reports.unknown'), value: d._count }))}>
                       <XAxis dataKey="name" fontSize={12} />
                       <YAxis />
                       <Tooltip />
@@ -105,12 +111,12 @@ export default function ReportsPage() {
 
         <TabsContent value="assets" className="space-y-4">
           <div className="flex items-center justify-between">
-            <CardTitle>资产统计</CardTitle>
-            <Button variant="outline" size="sm" onClick={() => downloadCsv('assets')}>导出 CSV</Button>
+            <CardTitle>{t('reports.assetStats')}</CardTitle>
+            <Button variant="outline" size="sm" onClick={() => downloadCsv('assets')}>{t('common.exportCsv')}</Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
-              <CardHeader><CardTitle>资产状态分布</CardTitle></CardHeader>
+              <CardHeader><CardTitle>{t('reports.assetStatusDistribution')}</CardTitle></CardHeader>
               <CardContent className="h-64">
                 {assetStats?.byStatus && (
                   <ResponsiveContainer width="100%" height="100%">
@@ -125,11 +131,11 @@ export default function ReportsPage() {
               </CardContent>
             </Card>
             <Card>
-              <CardHeader><CardTitle>部门分布 (Top 10)</CardTitle></CardHeader>
+              <CardHeader><CardTitle>{t('reports.departmentDistribution')}</CardTitle></CardHeader>
               <CardContent className="h-64">
                 {assetStats?.byDepartment && (
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={assetStats.byDepartment.map((d: any) => ({ name: d.department || '未分配', value: d._count }))}>
+                    <BarChart data={assetStats.byDepartment.map((d: any) => ({ name: d.department || t('reports.unassigned'), value: d._count }))}>
                       <XAxis dataKey="name" fontSize={12} />
                       <YAxis />
                       <Tooltip />
