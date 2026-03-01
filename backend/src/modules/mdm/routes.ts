@@ -2,6 +2,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { CheckinService } from './checkin.js';
 import { CommandService } from './commands.js';
 import { APNsService } from './apns.js';
+import { EnrollmentService } from './enrollment.js';
 
 const mdmRoutes: FastifyPluginAsync = async (fastify) => {
   const checkinService = new CheckinService(fastify.prisma);
@@ -9,9 +10,25 @@ const mdmRoutes: FastifyPluginAsync = async (fastify) => {
     keyId: process.env.APNS_KEY_ID || '',
     teamId: process.env.APNS_TEAM_ID || '',
     keyPath: process.env.APNS_KEY_PATH || '',
+    topic: process.env.APNS_TOPIC || '',
     production: process.env.NODE_ENV === 'production',
   });
   const commandService = new CommandService(fastify.prisma, apnsService);
+
+  const enrollmentService = new EnrollmentService({
+    serverUrl: process.env.MDM_SERVER_URL || `http://localhost:${process.env.PORT || '3001'}`,
+    topic: process.env.APNS_TOPIC || '',
+    identityName: 'myDevices MDM Certificate',
+  });
+
+  // MDM Enrollment profile download
+  fastify.get('/enroll', async (_request, reply) => {
+    const profileXml = enrollmentService.generateProfile();
+    reply
+      .header('Content-Type', 'application/x-apple-aspen-config')
+      .header('Content-Disposition', 'attachment; filename="enrollment.mobileconfig"')
+      .send(profileXml);
+  });
 
   // MDM Check-in endpoint
   fastify.put('/checkin', async (request, reply) => {
@@ -31,7 +48,7 @@ const mdmRoutes: FastifyPluginAsync = async (fastify) => {
       case 'CheckOut':
         return checkinService.handleCheckOut(body.UDID);
       default:
-        reply.status(400).send({ error: 'Unknown message type' });
+        return reply.status(400).send({ error: 'Unknown message type' });
     }
   });
 
@@ -42,9 +59,13 @@ const mdmRoutes: FastifyPluginAsync = async (fastify) => {
 
     // If device is reporting command result
     if (body.CommandUUID) {
-      const status = body.Status === 'Acknowledged' ? 'acknowledged' :
-                     body.Status === 'Error' ? 'error' :
-                     body.Status === 'NotNow' ? 'not_now' : 'acknowledged';
+      const statusMap: Record<string, string> = {
+        'Acknowledged': 'acknowledged',
+        'Error': 'error',
+        'NotNow': 'not_now',
+        'CommandFormatError': 'error',
+      };
+      const status = (statusMap[body.Status] || 'error') as import('@prisma/client').CommandStatus;
       await commandService.acknowledgeCommand(body.CommandUUID, status, body);
     }
 

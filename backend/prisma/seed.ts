@@ -16,7 +16,7 @@ async function main() {
       email: 'admin@mydevices.local',
       name: 'System Admin',
       role: 'super_admin',
-      passwordHash: hashSync('admin123', 10),
+      passwordHash: hashSync('admin123', 12),
     },
   });
   console.log('Seed completed');

@@ -9,8 +9,12 @@ declare module 'fastify' {
 }
 
 export default fp(async (fastify) => {
+  const dbUrl = process.env.DATABASE_URL;
+  if (!dbUrl && process.env.NODE_ENV === 'production') {
+    throw new Error('DATABASE_URL environment variable is required in production');
+  }
   const adapter = new PrismaPg({
-    connectionString: process.env.DATABASE_URL || 'postgresql://mydevices:mydevices_dev@localhost:5432/mydevices',
+    connectionString: dbUrl || 'postgresql://mydevices:mydevices_dev@localhost:5432/mydevices',
   });
   const prisma = new PrismaClient({ adapter });
   await prisma.$connect();

@@ -3,14 +3,39 @@ import cors from '@fastify/cors';
 import jwt from '@fastify/jwt';
 import prismaPlugin from './plugins/prisma.js';
 import redisPlugin from './plugins/redis.js';
+import swagger from '@fastify/swagger';
+import plist from 'plist';
 
 export async function buildApp() {
   const app = Fastify({ logger: true });
 
   await app.register(cors, { origin: process.env.FRONTEND_URL || 'http://localhost:3000', credentials: true });
-  await app.register(jwt, { secret: process.env.JWT_SECRET || 'dev-secret' });
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret && process.env.NODE_ENV === 'production') {
+    throw new Error('JWT_SECRET environment variable is required in production');
+  }
+  await app.register(jwt, { secret: jwtSecret || 'dev-secret' });
   await app.register(prismaPlugin);
   await app.register(redisPlugin);
+  await app.register(swagger, {
+    openapi: {
+      info: { title: 'myDevices API', version: '1.0.0', description: 'Apple 设备管理系统 API' },
+      servers: [{ url: 'http://localhost:3001' }],
+    },
+  });
+
+  // Register plist content-type parser for MDM endpoints
+  app.addContentTypeParser(
+    ['application/x-apple-aspen-mdm-checkin', 'application/x-apple-aspen-mdm'],
+    { parseAs: 'string' },
+    (_req, body, done) => {
+      try {
+        done(null, plist.parse(body as string));
+      } catch (err) {
+        done(err as Error, undefined);
+      }
+    }
+  );
 
   // Register route modules
   await app.register(import('./modules/auth/routes.js'), { prefix: '/api/auth' });
