@@ -40,6 +40,13 @@
   "sidebar.auditLogs": "审计日志",
   "sidebar.reports": "报表中心",
   "sidebar.settings": "系统设置",
+  "sidebar.overview": "概览",
+  "sidebar.deviceAssets": "设备资产",
+  "sidebar.organization": "组织管理",
+  "sidebar.system": "系统",
+  "sidebar.departments": "部门管理",
+  "sidebar.users": "人员管理",
+  "sidebar.roles": "角色管理",
 
   "login.title": "登录",
   "login.email": "邮箱",
@@ -231,5 +238,23 @@
 
   "notifications.title": "通知",
   "notifications.empty": "暂无通知",
-  "notifications.markAllRead": "全部已读"
+  "notifications.markAllRead": "全部已读",
+
+  "users.title": "用户管理",
+  "users.create": "新建用户",
+  "users.searchPlaceholder": "搜索姓名或邮箱",
+  "users.allDepartments": "全部部门",
+  "users.allRoles": "全部角色",
+  "users.name": "姓名",
+  "users.email": "邮箱",
+  "users.role": "角色",
+  "users.department": "部门",
+  "users.createdAt": "创建时间",
+  "users.noUsers": "暂无用户",
+  "users.pageInfo": "共 {{total}} 条，第 {{page}} 页",
+  "users.fillRequired": "请填写所有必填项",
+  "users.selectRole": "请选择角色",
+  "users.noDepartment": "无",
+  "users.editUser": "编辑用户",
+  "users.deleteConfirm": "确定要删除用户 {{name}}（{{email}}）吗？此操作不可撤销。"
 }

@@ -40,6 +40,13 @@
   "sidebar.auditLogs": "Audit Logs",
   "sidebar.reports": "Reports",
   "sidebar.settings": "Settings",
+  "sidebar.overview": "Overview",
+  "sidebar.deviceAssets": "Device & Assets",
+  "sidebar.organization": "Organization",
+  "sidebar.system": "System",
+  "sidebar.departments": "Departments",
+  "sidebar.users": "Users",
+  "sidebar.roles": "Roles",
 
   "login.title": "Login",
   "login.email": "Email",
@@ -231,5 +238,23 @@
 
   "notifications.title": "Notifications",
   "notifications.empty": "No notifications",
-  "notifications.markAllRead": "Mark all read"
+  "notifications.markAllRead": "Mark all read",
+
+  "users.title": "User Management",
+  "users.create": "New User",
+  "users.searchPlaceholder": "Search name or email",
+  "users.allDepartments": "All departments",
+  "users.allRoles": "All roles",
+  "users.name": "Name",
+  "users.email": "Email",
+  "users.role": "Role",
+  "users.department": "Department",
+  "users.createdAt": "Created At",
+  "users.noUsers": "No users",
+  "users.pageInfo": "{{total}} total, page {{page}}",
+  "users.fillRequired": "Please fill in all required fields",
+  "users.selectRole": "Select role",
+  "users.noDepartment": "None",
+  "users.editUser": "Edit User",
+  "users.deleteConfirm": "Are you sure you want to delete user {{name}} ({{email}})? This cannot be undone."
 }

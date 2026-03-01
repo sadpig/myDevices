@@ -58,6 +58,7 @@ export default function UsersPage() {
 
   const canWrite = hasPermission('user:write');
   const canDelete = hasPermission('user:delete');
+  const locale = i18n.language === 'zh' ? 'zh-CN' : 'en-US';
 
   const fetchUsers = useCallback(() => {
     const params = new URLSearchParams({ page: String(page), limit: String(LIMIT) });
@@ -86,7 +87,7 @@ export default function UsersPage() {
   function openEdit(u: UserRow) {
     setEName(u.name);
     setERoleId(u.role.id);
-    setEDeptId(u.department?.id ?? '');
+    setEDeptId(u.department?.id || '');
     setError('');
     setEditTarget(u);
   }
@@ -96,14 +97,10 @@ export default function UsersPage() {
     setSaving(true); setError('');
     try {
       await api.post('/api/auth/register', {
-        email: cEmail,
-        name: cName,
-        password: cPassword,
-        roleId: cRoleId,
-        ...(cDeptId ? { departmentId: cDeptId } : {}),
+        email: cEmail, name: cName, password: cPassword,
+        roleId: cRoleId, departmentId: cDeptId || undefined,
       });
       setCreateOpen(false);
-      setPage(1);
       fetchUsers();
     } catch (e: any) {
       setError(e?.response?.data?.error || t('settings.createFailed'));
@@ -115,14 +112,12 @@ export default function UsersPage() {
     setSaving(true); setError('');
     try {
       await api.put(`/api/auth/users/${editTarget.id}`, {
-        name: eName,
-        roleId: eRoleId,
-        departmentId: eDeptId || null,
+        name: eName, roleId: eRoleId, departmentId: eDeptId || null,
       });
       setEditTarget(null);
       fetchUsers();
     } catch (e: any) {
-      setError(e?.response?.data?.error || '保存失败');
+      setError(e?.response?.data?.error || t('settings.saveFailed'));
     } finally { setSaving(false); }
   }
 
@@ -132,50 +127,38 @@ export default function UsersPage() {
     try {
       await api.delete(`/api/auth/users/${deleteTarget.id}`);
       setDeleteTarget(null);
-      if (users.length === 1 && page > 1) setPage(p => p - 1);
-      else fetchUsers();
+      fetchUsers();
     } catch (e: any) {
-      setError(e?.response?.data?.error || '删除失败');
+      setError(e?.response?.data?.error || t('roles.deleteFailed'));
     } finally { setSaving(false); }
   }
-
-  const locale = i18n.language === 'zh' ? 'zh-CN' : 'en-US';
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">用户管理</h1>
+        <h1 className="text-2xl font-bold">{t('users.title')}</h1>
         {canWrite && (
-          <Button onClick={openCreate}>
-            <Plus className="h-4 w-4 mr-1" />新建用户
+          <Button size="sm" onClick={openCreate}>
+            <Plus className="h-4 w-4 mr-1" />{t('users.create')}
           </Button>
         )}
       </div>
 
-      <div className="flex gap-3 flex-wrap">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+      <div className="flex gap-4 flex-wrap">
+        <div className="relative max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="搜索姓名或邮箱"
-            value={search}
-            onChange={e => { setSearch(e.target.value); setPage(1); }}
-            className="pl-8 max-w-xs"
+            placeholder={t('users.searchPlaceholder')}
+            value={search} onChange={e => { setSearch(e.target.value); setPage(1); }}
+            className="pl-9"
           />
         </div>
-        <select
-          value={filterDept}
-          onChange={e => { setFilterDept(e.target.value); setPage(1); }}
-          className="border rounded-md px-3 py-2 text-sm bg-background"
-        >
-          <option value="">全部部门</option>
+        <select value={filterDept} onChange={e => { setFilterDept(e.target.value); setPage(1); }} className="border rounded-md px-3 py-2 text-sm bg-background">
+          <option value="">{t('users.allDepartments')}</option>
           {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
         </select>
-        <select
-          value={filterRole}
-          onChange={e => { setFilterRole(e.target.value); setPage(1); }}
-          className="border rounded-md px-3 py-2 text-sm bg-background"
-        >
-          <option value="">全部角色</option>
+        <select value={filterRole} onChange={e => { setFilterRole(e.target.value); setPage(1); }} className="border rounded-md px-3 py-2 text-sm bg-background">
+          <option value="">{t('users.allRoles')}</option>
           {roles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
         </select>
       </div>
@@ -185,50 +168,31 @@ export default function UsersPage() {
           <table className="w-full text-sm">
             <thead className="border-b bg-muted/30">
               <tr>
-                <th className="p-3 text-left">姓名</th>
-                <th className="p-3 text-left">邮箱</th>
-                <th className="p-3 text-left">角色</th>
-                <th className="p-3 text-left">部门</th>
-                <th className="p-3 text-left">创建时间</th>
-                <th className="p-3 text-left">操作</th>
+                <th className="p-3 text-left">{t('users.name')}</th>
+                <th className="p-3 text-left">{t('users.email')}</th>
+                <th className="p-3 text-left">{t('users.role')}</th>
+                <th className="p-3 text-left">{t('users.department')}</th>
+                <th className="p-3 text-left">{t('users.createdAt')}</th>
+                <th className="p-3 text-left">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody>
               {users.map(u => (
                 <tr key={u.id} className="border-b hover:bg-muted/20">
                   <td className="p-3 font-medium">{u.name}</td>
-                  <td className="p-3 text-muted-foreground">{u.email}</td>
-                  <td className="p-3">
-                    <Badge variant="outline">{u.role.name}</Badge>
-                  </td>
-                  <td className="p-3">{u.department?.name ?? '-'}</td>
-                  <td className="p-3 text-xs">
-                    {new Date(u.createdAt).toLocaleDateString(locale)}
-                  </td>
-                  <td className="p-3">
-                    <div className="flex gap-1">
-                      {canWrite && (
-                        <Button variant="ghost" size="sm" onClick={() => openEdit(u)}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                      )}
-                      {canDelete && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-destructive hover:text-destructive"
-                          onClick={() => { setError(''); setDeleteTarget(u); }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
+                  <td className="p-3">{u.email}</td>
+                  <td className="p-3"><Badge variant="outline">{u.role.name}</Badge></td>
+                  <td className="p-3">{u.department?.name || '-'}</td>
+                  <td className="p-3">{new Date(u.createdAt).toLocaleDateString(locale)}</td>
+                  <td className="p-3 space-x-1">
+                    {canWrite && <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(u)}><Pencil className="h-3.5 w-3.5" /></Button>}
+                    {canDelete && <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => { setError(''); setDeleteTarget(u); }}><Trash2 className="h-3.5 w-3.5" /></Button>}
                   </td>
                 </tr>
               ))}
               {users.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="p-4 text-center text-muted-foreground">暂无用户</td>
+                  <td colSpan={6} className="p-4 text-center text-muted-foreground">{t('users.noUsers')}</td>
                 </tr>
               )}
             </tbody>
@@ -237,51 +201,51 @@ export default function UsersPage() {
       </Card>
 
       <div className="flex justify-between items-center">
-        <span className="text-sm text-muted-foreground">共 {total} 条，第 {page} 页</span>
+        <span className="text-sm text-muted-foreground">{t('common.total', { count: total })} · {t('common.page', { current: page, total: Math.max(1, Math.ceil(total / LIMIT)) })}</span>
         <div className="space-x-2">
-          <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>上一页</Button>
-          <Button variant="outline" size="sm" onClick={() => setPage(p => p + 1)} disabled={page * LIMIT >= total}>下一页</Button>
+          <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>{t('common.prev')}</Button>
+          <Button variant="outline" size="sm" onClick={() => setPage(p => p + 1)} disabled={page * LIMIT >= total}>{t('common.next')}</Button>
         </div>
       </div>
 
       {/* Create dialog */}
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+      <Dialog open={createOpen} onOpenChange={open => { if (!open) setCreateOpen(false); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>新建用户</DialogTitle>
+            <DialogTitle>{t('users.create')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <label className="text-sm font-medium">邮箱 *</label>
-              <Input value={cEmail} onChange={e => setCEmail(e.target.value)} placeholder="user@example.com" className="mt-1" />
+              <label className="text-sm font-medium">{t('users.email')} *</label>
+              <Input type="email" value={cEmail} onChange={e => setCEmail(e.target.value)} className="mt-1" />
             </div>
             <div>
-              <label className="text-sm font-medium">姓名 *</label>
-              <Input value={cName} onChange={e => setCName(e.target.value)} placeholder="姓名" className="mt-1" />
+              <label className="text-sm font-medium">{t('users.name')} *</label>
+              <Input value={cName} onChange={e => setCName(e.target.value)} placeholder={t('users.name')} className="mt-1" />
             </div>
             <div>
-              <label className="text-sm font-medium">密码 *</label>
-              <Input type="password" value={cPassword} onChange={e => setCPassword(e.target.value)} placeholder="密码" className="mt-1" />
+              <label className="text-sm font-medium">{t('users.password')} *</label>
+              <Input type="password" value={cPassword} onChange={e => setCPassword(e.target.value)} placeholder={t('users.password')} className="mt-1" />
             </div>
             <div>
-              <label className="text-sm font-medium">角色 *</label>
+              <label className="text-sm font-medium">{t('users.role')} *</label>
               <select value={cRoleId} onChange={e => setCRoleId(e.target.value)} className="mt-1 w-full border rounded-md px-3 py-2 text-sm bg-background">
-                <option value="">请选择角色</option>
+                <option value="">{t('users.selectRole')}</option>
                 {roles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium">部门</label>
+              <label className="text-sm font-medium">{t('users.department')}</label>
               <select value={cDeptId} onChange={e => setCDeptId(e.target.value)} className="mt-1 w-full border rounded-md px-3 py-2 text-sm bg-background">
-                <option value="">无</option>
+                <option value="">{t('users.noDepartment')}</option>
                 {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
               </select>
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateOpen(false)} disabled={saving}>取消</Button>
-            <Button onClick={handleCreate} disabled={saving}>{saving ? '创建中...' : '创建'}</Button>
+            <Button variant="outline" onClick={() => setCreateOpen(false)} disabled={saving}>{t('common.cancel')}</Button>
+            <Button onClick={handleCreate} disabled={saving}>{saving ? t('common.creating') : t('common.create')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -290,32 +254,32 @@ export default function UsersPage() {
       <Dialog open={!!editTarget} onOpenChange={open => { if (!open) setEditTarget(null); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>编辑用户</DialogTitle>
+            <DialogTitle>{t('users.editUser')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <label className="text-sm font-medium">姓名 *</label>
-              <Input value={eName} onChange={e => setEName(e.target.value)} placeholder="姓名" className="mt-1" />
+              <label className="text-sm font-medium">{t('users.name')} *</label>
+              <Input value={eName} onChange={e => setEName(e.target.value)} placeholder={t('users.name')} className="mt-1" />
             </div>
             <div>
-              <label className="text-sm font-medium">角色 *</label>
+              <label className="text-sm font-medium">{t('users.role')} *</label>
               <select value={eRoleId} onChange={e => setERoleId(e.target.value)} className="mt-1 w-full border rounded-md px-3 py-2 text-sm bg-background">
-                <option value="">请选择角色</option>
+                <option value="">{t('users.selectRole')}</option>
                 {roles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium">部门</label>
+              <label className="text-sm font-medium">{t('users.department')}</label>
               <select value={eDeptId} onChange={e => setEDeptId(e.target.value)} className="mt-1 w-full border rounded-md px-3 py-2 text-sm bg-background">
-                <option value="">无</option>
+                <option value="">{t('users.noDepartment')}</option>
                 {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
               </select>
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditTarget(null)} disabled={saving}>取消</Button>
-            <Button onClick={handleEdit} disabled={saving}>{saving ? '保存中...' : '保存'}</Button>
+            <Button variant="outline" onClick={() => setEditTarget(null)} disabled={saving}>{t('common.cancel')}</Button>
+            <Button onClick={handleEdit} disabled={saving}>{saving ? t('common.saving') : t('common.save')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -324,15 +288,15 @@ export default function UsersPage() {
       <Dialog open={!!deleteTarget} onOpenChange={open => { if (!open) setDeleteTarget(null); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>确认删除</DialogTitle>
+            <DialogTitle>{t('common.confirmDelete')}</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            确定要删除用户 <span className="font-medium text-foreground">{deleteTarget?.name}</span>（{deleteTarget?.email}）吗？此操作不可撤销。
+            {t('users.deleteConfirm', { name: deleteTarget?.name, email: deleteTarget?.email })}
           </p>
           {error && <p className="text-sm text-destructive">{error}</p>}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteTarget(null)} disabled={saving}>取消</Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={saving}>{saving ? '删除中...' : '删除'}</Button>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)} disabled={saving}>{t('common.cancel')}</Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={saving}>{saving ? t('roles.deleting') : t('common.delete')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

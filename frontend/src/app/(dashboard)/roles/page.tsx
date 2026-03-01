@@ -268,7 +268,7 @@ export default function RolesPage() {
                 <Input
                   value={form.code}
                   onChange={e => setForm(f => ({ ...f, code: e.target.value }))}
-                  placeholder="如：device_admin"
+                  placeholder="e.g. device_admin"
                   readOnly={!!editingRole}
                   className={editingRole ? 'bg-muted cursor-not-allowed' : ''}
                 />
@@ -302,7 +302,7 @@ export default function RolesPage() {
               <Input
                 value={form.allowedProfileTypes}
                 onChange={e => setForm(f => ({ ...f, allowedProfileTypes: e.target.value }))}
-                placeholder="如：wifi,vpn,email"
+                placeholder="e.g. wifi,vpn,email"
               />
             </div>
 
