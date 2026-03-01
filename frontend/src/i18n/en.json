@@ -109,6 +109,12 @@
   "profiles.noProfiles": "No profiles",
   "profiles.deviceUnit": "{{count}}",
   "profiles.pageInfo": "{{total}} total · Page {{page}}",
+  "profiles.createTitle": "New Profile",
+  "profiles.info": "Profile Info",
+  "profiles.description": "Description",
+  "profiles.namePlaceholder": "Profile name",
+  "profiles.descriptionPlaceholder": "Optional description",
+  "profiles.invalidJson": "Invalid Payload JSON format",
 
   "audit.title": "Audit Logs",
   "audit.filterByAction": "Filter by action type...",

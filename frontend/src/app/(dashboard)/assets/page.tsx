@@ -75,7 +75,7 @@ export default function AssetsPage() {
                   <td className="p-3"><Badge variant={ASSET_STATUS_VARIANT[a.status] || 'secondary'}>{t('assetStatus.' + a.status)}</Badge></td>
                   <td className="p-3">{a.warrantyEnd ? new Date(a.warrantyEnd).toLocaleDateString(locale) : '-'}</td>
                   <td className="p-3 text-xs">{new Date(a.createdAt).toLocaleDateString(locale)}</td>
-                  <td className="p-3"><Link href={`/assets/${a.id}`}><Button variant="ghost" size="sm">详情</Button></Link></td>
+                  <td className="p-3"><Link href={`/assets/${a.id}`}><Button variant="ghost" size="sm">{t('common.details')}</Button></Link></td>
                 </tr>
               ))}
               {assets.length === 0 && <tr><td colSpan={8} className="p-4 text-center text-muted-foreground">{t('assets.noAssets')}</td></tr>}
@@ -85,7 +85,7 @@ export default function AssetsPage() {
       </Card>
 
       <div className="flex justify-between items-center">
-        <span className="text-sm text-muted-foreground">共 {total} 条 · 第 {page}/{Math.max(1, Math.ceil(total / 20))} 页</span>
+        <span className="text-sm text-muted-foreground">{t('devices.pageInfo', { total, page, pages: Math.max(1, Math.ceil(total / 20)) })}</span>
         <div className="space-x-2">
           <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>{t('common.prev')}</Button>
           <Button variant="outline" size="sm" onClick={() => setPage(p => p + 1)} disabled={page * 20 >= total}>{t('common.next')}</Button>

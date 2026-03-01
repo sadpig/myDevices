@@ -1,12 +1,12 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 
 const PAYLOAD_TYPES = ['WiFi', 'VPN', 'Email', 'Passcode', 'Restrictions', 'Certificate', 'APN', 'General'];
 
@@ -48,7 +48,7 @@ export default function NewProfilePage() {
       });
       router.push('/profiles');
     } catch (err: any) {
-      setError(err?.response?.data?.error || '创建失败，请重试');
+      setError(err?.response?.data?.error || t('settings.createFailed'));
     } finally {
       setSaving(false);
     }
@@ -58,29 +58,29 @@ export default function NewProfilePage() {
     <div className="space-y-6 max-w-2xl">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="sm" onClick={() => router.push('/profiles')}>
-          <ArrowLeft className="h-4 w-4 mr-2" />返回
+          <ArrowLeft className="h-4 w-4 mr-2" />{t('common.back')}
         </Button>
-        <h1 className="text-2xl font-bold">新建配置描述文件</h1>
+        <h1 className="text-2xl font-bold">{t('profiles.createTitle')}</h1>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>配置信息</CardTitle>
+          <CardTitle>{t('profiles.info')}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1">
-              <label className="text-sm font-medium">名称 *</label>
+              <label className="text-sm font-medium">{t('profiles.name')} *</label>
               <Input
                 value={form.name}
                 onChange={e => set('name', e.target.value)}
-                placeholder="配置描述文件名称"
+                placeholder={t('profiles.namePlaceholder')}
                 required
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-sm font-medium">标识符 *</label>
+              <label className="text-sm font-medium">{t('profiles.identifier')} *</label>
               <Input
                 value={form.identifier}
                 onChange={e => set('identifier', e.target.value)}
@@ -90,22 +90,22 @@ export default function NewProfilePage() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-sm font-medium">负载类型 *</label>
+              <label className="text-sm font-medium">{t('profiles.payloadType')} *</label>
               <select
                 value={form.payloadType}
                 onChange={e => set('payloadType', e.target.value)}
                 className="w-full border rounded-md px-3 py-2 text-sm"
               >
-                {PAYLOAD_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                {PAYLOAD_TYPES.map(pt => <option key={pt} value={pt}>{pt}</option>)}
               </select>
             </div>
 
             <div className="space-y-1">
-              <label className="text-sm font-medium">描述</label>
+              <label className="text-sm font-medium">{t('profiles.description')}</label>
               <textarea
                 value={form.description}
                 onChange={e => set('description', e.target.value)}
-                placeholder="可选描述"
+                placeholder={t('profiles.descriptionPlaceholder')}
                 rows={2}
                 className="w-full border rounded-md px-3 py-2 text-sm resize-none"
               />
@@ -125,8 +125,8 @@ export default function NewProfilePage() {
             {error && <p className="text-sm text-red-500">{error}</p>}
 
             <div className="flex gap-2 pt-2">
-              <Button type="submit" disabled={saving}>{saving ? '创建中...' : '创建'}</Button>
-              <Button type="button" variant="outline" onClick={() => router.push('/profiles')}>取消</Button>
+              <Button type="submit" disabled={saving}>{saving ? t('common.creating') : t('common.create')}</Button>
+              <Button type="button" variant="outline" onClick={() => router.push('/profiles')}>{t('common.cancel')}</Button>
             </div>
           </form>
         </CardContent>

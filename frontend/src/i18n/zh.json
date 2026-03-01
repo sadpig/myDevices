@@ -109,6 +109,12 @@
   "profiles.noProfiles": "暂无配置描述文件",
   "profiles.deviceUnit": "{{count}} 台",
   "profiles.pageInfo": "共 {{total}} 个 · 第 {{page}} 页",
+  "profiles.createTitle": "新建配置描述文件",
+  "profiles.info": "配置信息",
+  "profiles.description": "描述",
+  "profiles.namePlaceholder": "配置描述文件名称",
+  "profiles.descriptionPlaceholder": "可选描述",
+  "profiles.invalidJson": "Payload JSON 格式无效",
 
   "audit.title": "审计日志",
   "audit.filterByAction": "按操作类型筛选...",

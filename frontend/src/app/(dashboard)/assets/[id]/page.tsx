@@ -90,13 +90,13 @@ export default function AssetDetailPage() {
 
         {asset.device && (
           <Card>
-            <CardHeader><CardTitle className="text-sm">关联设备</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-sm">{t('devices.sections.linkedAsset')}</CardTitle></CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-muted-foreground">设备名称</span><span>{asset.device.deviceName || '-'}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">类型</span><span>{asset.device.deviceType}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">序列号</span><span className="font-mono">{asset.device.serialNumber}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">系统版本</span><span>{asset.device.osVersion || '-'}</span></div>
-              <Link href={`/devices/${asset.device.id}`}><Button variant="outline" size="sm" className="mt-2 w-full">查看设备详情</Button></Link>
+              <div className="flex justify-between"><span className="text-muted-foreground">{t('devices.name')}</span><span>{asset.device.deviceName || '-'}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">{t('devices.type')}</span><span>{asset.device.deviceType}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">{t('devices.serial')}</span><span className="font-mono">{asset.device.serialNumber}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">{t('devices.osVersion')}</span><span>{asset.device.osVersion || '-'}</span></div>
+              <Link href={`/devices/${asset.device.id}`}><Button variant="outline" size="sm" className="mt-2 w-full">{t('common.details')}</Button></Link>
             </CardContent>
           </Card>
         )}
