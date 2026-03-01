@@ -36,4 +36,14 @@ export class ProfileService {
       data: { profileId, deviceId },
     });
   }
+
+  async remove(id: string) {
+    return this.prisma.profile.delete({ where: { id } });
+  }
+
+  async uninstallFromDevice(profileId: string, deviceId: string) {
+    return this.prisma.deviceProfile.delete({
+      where: { deviceId_profileId: { deviceId, profileId } },
+    });
+  }
 }

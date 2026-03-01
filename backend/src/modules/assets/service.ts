@@ -73,4 +73,8 @@ export class AssetService {
     ]);
     return { byStatus, byDepartment, total };
   }
+
+  async remove(id: string) {
+    return this.prisma.asset.delete({ where: { id } });
+  }
 }
