@@ -6,10 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
-const roleLabels: Record<string, string> = {
-  super_admin: '超级管理员', device_admin: '设备管理员', readonly: '只读用户',
-};
+import { ROLE_LABELS } from '@/lib/constants';
 
 export default function SettingsPage() {
   const [users, setUsers] = useState<any[]>([]);
@@ -18,9 +15,14 @@ export default function SettingsPage() {
   const [message, setMessage] = useState('');
 
   const loadUsers = () => {
-    api.get('/api/auth/me').then(res => {
-      setUsers([res.data]);
-    }).catch(() => {});
+    api.get('/api/auth/users').then(res => {
+      setUsers(res.data.users || []);
+    }).catch(() => {
+      // 非 super_admin 回退到只显示自己
+      api.get('/api/auth/me').then(res => {
+        setUsers([res.data]);
+      }).catch(() => {});
+    });
   };
 
   useEffect(() => { loadUsers(); }, []);
@@ -32,6 +34,7 @@ export default function SettingsPage() {
     try {
       await api.post('/api/auth/register', newUser);
       setMessage('用户创建成功');
+      loadUsers();
       setNewUser({ email: '', name: '', password: '', role: 'readonly' });
     } catch {
       setMessage('创建失败');
@@ -83,6 +86,38 @@ export default function SettingsPage() {
                 </div>
                 <Button type="submit" disabled={creating}>{creating ? '创建中...' : '创建用户'}</Button>
               </form>
+            <div className="mt-6">
+              <h3 className="text-sm font-medium mb-3">现有用户</h3>
+              <table className="w-full text-sm">
+                <thead className="border-b bg-gray-50">
+                  <tr>
+                    <th className="p-2 text-left">姓名</th>
+                    <th className="p-2 text-left">邮箱</th>
+                    <th className="p-2 text-left">角色</th>
+                    <th className="p-2 text-left">操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((u: any) => (
+                    <tr key={u.id} className="border-b">
+                      <td className="p-2">{u.name}</td>
+                      <td className="p-2">{u.email}</td>
+                      <td className="p-2"><Badge>{ROLE_LABELS[u.role] || u.role}</Badge></td>
+                      <td className="p-2">
+                        <Button variant="ghost" size="sm" className="text-red-500"
+                          onClick={async () => {
+                            if (!confirm(`确定删除用户 ${u.name}？`)) return;
+                            try {
+                              await api.delete(`/api/auth/users/${u.id}`);
+                              loadUsers();
+                            } catch { setMessage('删除失败'); }
+                          }}>删除</Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
             </CardContent>
           </Card>
         </TabsContent>

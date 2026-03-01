@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import api from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -15,6 +16,20 @@ export default function ReportsPage() {
   const [deviceStats, setDeviceStats] = useState<any>(null);
   const [assetStats, setAssetStats] = useState<any>(null);
   const [compliance, setCompliance] = useState<any>(null);
+
+  const downloadCsv = async (type: 'devices' | 'assets') => {
+    try {
+      const res = await api.get(`/api/reports/${type}/export`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${type}-report-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch {
+      alert('导出失败');
+    }
+  };
 
   useEffect(() => {
     api.get('/api/reports/devices').then(res => setDeviceStats(res.data)).catch(() => {});
@@ -50,6 +65,10 @@ export default function ReportsPage() {
         </TabsList>
 
         <TabsContent value="devices" className="space-y-4">
+          <div className="flex items-center justify-between">
+            <CardTitle>设备统计</CardTitle>
+            <Button variant="outline" size="sm" onClick={() => downloadCsv('devices')}>导出 CSV</Button>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader><CardTitle>设备类型分布</CardTitle></CardHeader>
@@ -85,6 +104,10 @@ export default function ReportsPage() {
         </TabsContent>
 
         <TabsContent value="assets" className="space-y-4">
+          <div className="flex items-center justify-between">
+            <CardTitle>资产统计</CardTitle>
+            <Button variant="outline" size="sm" onClick={() => downloadCsv('assets')}>导出 CSV</Button>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader><CardTitle>资产状态分布</CardTitle></CardHeader>
