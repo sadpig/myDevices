@@ -6,10 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const PAYLOAD_TYPES = ['WiFi', 'VPN', 'Email', 'Passcode', 'Restrictions', 'Certificate', 'APN', 'General'];
 
 export default function NewProfilePage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [form, setForm] = useState({
     name: '',
@@ -31,7 +33,7 @@ export default function NewProfilePage() {
     try {
       parsedPayload = JSON.parse(form.payload);
     } catch {
-      setError('Payload 不是有效的 JSON');
+      setError(t('profiles.invalidJson'));
       return;
     }
 
