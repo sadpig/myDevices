@@ -9,7 +9,7 @@ interface DeviceFilters {
 export class DeviceService {
   constructor(private prisma: PrismaClient) {}
 
-  async list(page = 1, limit = 20, filters?: DeviceFilters) {
+  async list(page = 1, limit = 20, filters?: DeviceFilters, sortBy = 'createdAt', sortOrder: 'asc' | 'desc' = 'desc') {
     const where: any = {};
     if (filters?.deviceType) where.deviceType = filters.deviceType;
     if (filters?.enrollmentStatus) where.enrollmentStatus = filters.enrollmentStatus;
@@ -21,11 +21,14 @@ export class DeviceService {
       ];
     }
 
+    const allowedSort = ['createdAt', 'deviceName', 'serialNumber', 'deviceType', 'osVersion', 'lastSeenAt', 'enrollmentStatus'];
+    const orderField = allowedSort.includes(sortBy) ? sortBy : 'createdAt';
+
     const [devices, total] = await Promise.all([
       this.prisma.device.findMany({
         where,
         include: { asset: { select: { status: true, assignedTo: true, department: true } } },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { [orderField]: sortOrder },
         skip: (page - 1) * limit,
         take: limit,
       }),

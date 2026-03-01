@@ -8,8 +8,8 @@ const auditRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.addHook('preHandler', authenticate);
 
   fastify.get('/', async (request) => {
-    const { page, limit, userId, action, targetType } = request.query as any;
-    return auditService.list(parseInt(page) || 1, parseInt(limit) || 50, { userId, action, targetType });
+    const { page, limit, userId, action, targetType, sortBy, sortOrder, startDate, endDate } = request.query as any;
+    return auditService.list(parseInt(page) || 1, parseInt(limit) || 50, { userId, action, targetType, startDate, endDate }, sortBy, sortOrder);
   });
 };
 

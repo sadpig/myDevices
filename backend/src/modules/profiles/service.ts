@@ -3,15 +3,27 @@ import { PrismaClient } from '@prisma/client';
 export class ProfileService {
   constructor(private prisma: PrismaClient) {}
 
-  async list(page = 1, limit = 20) {
+  async list(page = 1, limit = 20, sortBy = 'createdAt', sortOrder: 'asc' | 'desc' = 'desc', search?: string) {
+    const allowedSort = ['createdAt', 'name', 'identifier', 'payloadType'];
+    const orderField = allowedSort.includes(sortBy) ? sortBy : 'createdAt';
+
+    const where: any = {};
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { identifier: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
     const [profiles, total] = await Promise.all([
       this.prisma.profile.findMany({
-        orderBy: { createdAt: 'desc' },
+        where,
+        orderBy: { [orderField]: sortOrder },
         skip: (page - 1) * limit,
         take: limit,
         include: { _count: { select: { devices: true } } },
       }),
-      this.prisma.profile.count(),
+      this.prisma.profile.count({ where }),
     ]);
     return { profiles, total, page, limit };
   }

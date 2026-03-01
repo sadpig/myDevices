@@ -12,6 +12,11 @@ import mdmRoutes from './modules/mdm/routes.js';
 import auditRoutes from './modules/audit/routes.js';
 import reportRoutes from './modules/reports/routes.js';
 import profileRoutes from './modules/profiles/routes.js';
+import departmentRoutes from './modules/departments/routes.js';
+import roleRoutes from './modules/roles/routes.js';
+import { requirePermission } from './middleware/authenticate.js';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { resolve } from 'path';
 
 export async function buildApp() {
   const app = Fastify({ logger: true });
@@ -52,8 +57,48 @@ export async function buildApp() {
   await app.register(auditRoutes, { prefix: '/api/audit-logs' });
   await app.register(reportRoutes, { prefix: '/api/reports' });
   await app.register(profileRoutes, { prefix: '/api/profiles' });
+  await app.register(departmentRoutes, { prefix: '/api/departments' });
+  await app.register(roleRoutes, { prefix: '/api/roles' });
 
   app.get('/health', async () => ({ status: 'ok' }));
+
+  // APNs settings endpoints
+  app.get('/api/settings/apns', { preHandler: [requirePermission('settings:read')] }, async () => {
+    const keyPath = process.env.APNS_KEY_PATH || '';
+    return {
+      keyId: process.env.APNS_KEY_ID || '',
+      teamId: process.env.APNS_TEAM_ID || '',
+      keyPath,
+      topic: process.env.APNS_TOPIC || '',
+      keyFileExists: keyPath ? existsSync(keyPath) : false,
+    };
+  });
+
+  app.put('/api/settings/apns', { preHandler: [requirePermission('settings:write')] }, async (request) => {
+    const { keyId, teamId, keyPath, topic } = request.body as { keyId?: string; teamId?: string; keyPath?: string; topic?: string };
+    const envPath = resolve(process.cwd(), '.env');
+    let envContent = '';
+    try { envContent = readFileSync(envPath, 'utf-8'); } catch { envContent = ''; }
+
+    const updates: Record<string, string> = {};
+    if (keyId !== undefined) updates.APNS_KEY_ID = keyId;
+    if (teamId !== undefined) updates.APNS_TEAM_ID = teamId;
+    if (keyPath !== undefined) updates.APNS_KEY_PATH = keyPath;
+    if (topic !== undefined) updates.APNS_TOPIC = topic;
+
+    for (const [key, value] of Object.entries(updates)) {
+      const regex = new RegExp(`^${key}=.*$`, 'm');
+      if (regex.test(envContent)) {
+        envContent = envContent.replace(regex, `${key}=${value}`);
+      } else {
+        envContent += `\n${key}=${value}`;
+      }
+      process.env[key] = value;
+    }
+
+    writeFileSync(envPath, envContent.trim() + '\n');
+    return { message: 'APNs settings updated' };
+  });
 
   return app;
 }

@@ -1,9 +1,10 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
+ENV PRISMA_ENGINES_MIRROR=https://registry.npmmirror.com/-/binary/prisma
 COPY package*.json ./
 COPY prisma ./prisma/
 COPY prisma.config.ts ./
-RUN npm install --production=false
+RUN npm config set registry https://registry.npmmirror.com && npm install
 COPY . .
 RUN npx prisma generate
 RUN npm run build
@@ -16,4 +17,4 @@ COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./
 COPY --from=builder /app/package.json ./
 EXPOSE 3001
-CMD ["node", "dist/server.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/server.js"]

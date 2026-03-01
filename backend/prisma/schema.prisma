@@ -58,6 +58,7 @@ model User {
   role         Role        @relation(fields: [roleId], references: [id])
   department   Department? @relation(fields: [departmentId], references: [id])
   auditLogs    AuditLog[]
+  notifications Notification[]
 
   @@map("users")
 }
@@ -223,4 +224,18 @@ model AuditLog {
   @@index([createdAt])
   @@index([targetType, targetId])
   @@map("audit_logs")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  title     String
+  content   String
+  type      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+  @@map("notifications")
 }

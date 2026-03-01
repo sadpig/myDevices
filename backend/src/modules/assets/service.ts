@@ -2,17 +2,17 @@ import { PrismaClient, AssetStatus } from '@prisma/client';
 
 interface AssetFilters {
   status?: AssetStatus;
-  department?: string;
+  departmentId?: string;
   search?: string;
 }
 
 export class AssetService {
   constructor(private prisma: PrismaClient) {}
 
-  async list(page = 1, limit = 20, filters?: AssetFilters) {
+  async list(page = 1, limit = 20, filters?: AssetFilters, sortBy = 'createdAt', sortOrder: 'asc' | 'desc' = 'desc') {
     const where: any = {};
     if (filters?.status) where.status = filters.status;
-    if (filters?.department) where.department = { contains: filters.department, mode: 'insensitive' };
+    if (filters?.departmentId) where.departmentId = filters.departmentId;
     if (filters?.search) {
       where.OR = [
         { assignedTo: { contains: filters.search, mode: 'insensitive' } },
@@ -21,11 +21,17 @@ export class AssetService {
       ];
     }
 
+    const allowedSort = ['createdAt', 'status', 'departmentId', 'assignedTo', 'purchaseDate', 'warrantyEnd', 'purchasePrice'];
+    const orderField = allowedSort.includes(sortBy) ? sortBy : 'createdAt';
+
     const [assets, total] = await Promise.all([
       this.prisma.asset.findMany({
         where,
-        include: { device: { select: { serialNumber: true, deviceName: true, deviceType: true, modelName: true } } },
-        orderBy: { createdAt: 'desc' },
+        include: {
+          device: { select: { serialNumber: true, deviceName: true, deviceType: true, modelName: true } },
+          department: { select: { id: true, name: true } },
+        },
+        orderBy: { [orderField]: sortOrder },
         skip: (page - 1) * limit,
         take: limit,
       }),
@@ -37,11 +43,11 @@ export class AssetService {
   async getById(id: string) {
     return this.prisma.asset.findUniqueOrThrow({
       where: { id },
-      include: { device: true },
+      include: { device: true, department: { select: { id: true, name: true } } },
     });
   }
 
-  async create(data: { deviceId: string; purchaseDate?: string; purchasePrice?: number; warrantyEnd?: string; assignedTo?: string; department?: string; location?: string; status?: AssetStatus; notes?: string }) {
+  async create(data: { deviceId: string; purchaseDate?: string; purchasePrice?: number; warrantyEnd?: string; assignedTo?: string; departmentId?: string; location?: string; status?: AssetStatus; notes?: string }) {
     return this.prisma.asset.create({
       data: {
         deviceId: data.deviceId,
@@ -49,26 +55,26 @@ export class AssetService {
         purchasePrice: data.purchasePrice,
         warrantyEnd: data.warrantyEnd ? new Date(data.warrantyEnd) : undefined,
         assignedTo: data.assignedTo,
-        department: data.department,
+        departmentId: data.departmentId,
         location: data.location,
         status: data.status || 'in_stock',
         notes: data.notes,
       },
-      include: { device: true },
+      include: { device: true, department: { select: { id: true, name: true } } },
     });
   }
 
-  async update(id: string, data: Partial<{ purchaseDate: string; purchasePrice: number; warrantyEnd: string; assignedTo: string; department: string; location: string; status: AssetStatus; notes: string }>) {
+  async update(id: string, data: Partial<{ purchaseDate: string; purchasePrice: number; warrantyEnd: string; assignedTo: string; departmentId: string; location: string; status: AssetStatus; notes: string }>) {
     const updateData: any = { ...data };
     if (data.purchaseDate) updateData.purchaseDate = new Date(data.purchaseDate);
     if (data.warrantyEnd) updateData.warrantyEnd = new Date(data.warrantyEnd);
-    return this.prisma.asset.update({ where: { id }, data: updateData, include: { device: true } });
+    return this.prisma.asset.update({ where: { id }, data: updateData, include: { device: true, department: { select: { id: true, name: true } } } });
   }
 
   async stats() {
     const [byStatus, byDepartment, total] = await Promise.all([
       this.prisma.asset.groupBy({ by: ['status'], _count: true }),
-      this.prisma.asset.groupBy({ by: ['department'], _count: true, orderBy: { _count: { department: 'desc' } }, take: 10 }),
+      this.prisma.asset.groupBy({ by: ['departmentId'], _count: true, orderBy: { _count: { departmentId: 'desc' } }, take: 10 }),
       this.prisma.asset.count(),
     ]);
     return { byStatus, byDepartment, total };

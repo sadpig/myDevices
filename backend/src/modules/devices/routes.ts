@@ -1,6 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 import { DeviceService } from './service.js';
-import { authenticate } from '../../middleware/authenticate.js';
+import { requirePermission } from '../../middleware/authenticate.js';
 import { CommandService } from '../mdm/commands.js';
 import { APNsService } from '../mdm/apns.js';
 import { AuditService } from '../audit/service.js';
@@ -17,23 +17,23 @@ const deviceRoutes: FastifyPluginAsync = async (fastify) => {
   const commandService = new CommandService(fastify.prisma, apnsService);
   const auditService = new AuditService(fastify.prisma);
 
-  fastify.addHook('preHandler', authenticate);
-
-  fastify.get('/', async (request) => {
-    const { page, limit, deviceType, enrollmentStatus, search } = request.query as any;
+  fastify.get('/', { preHandler: [requirePermission('device:read')] }, async (request) => {
+    const { page, limit, deviceType, enrollmentStatus, search, sortBy, sortOrder } = request.query as any;
     return deviceService.list(
       parseInt(page) || 1,
       parseInt(limit) || 20,
-      { deviceType, enrollmentStatus, search }
+      { deviceType, enrollmentStatus, search },
+      sortBy,
+      sortOrder
     );
   });
 
-  fastify.get('/:id', async (request) => {
+  fastify.get('/:id', { preHandler: [requirePermission('device:read')] }, async (request) => {
     const { id } = request.params as { id: string };
     return deviceService.getById(id);
   });
 
-  fastify.put('/:id', async (request) => {
+  fastify.put('/:id', { preHandler: [requirePermission('device:write')] }, async (request) => {
     const { id } = request.params as { id: string };
     const data = request.body as any;
     const result = await deviceService.update(id, data);
@@ -42,7 +42,7 @@ const deviceRoutes: FastifyPluginAsync = async (fastify) => {
     return result;
   });
 
-  fastify.delete('/:id', async (request) => {
+  fastify.delete('/:id', { preHandler: [requirePermission('device:delete')] }, async (request) => {
     const { id } = request.params as { id: string };
     await deviceService.remove(id);
     const user = request.user as { id: string };
@@ -50,13 +50,14 @@ const deviceRoutes: FastifyPluginAsync = async (fastify) => {
     return { message: 'Device removed' };
   });
 
-  fastify.get('/:id/commands', async (request) => {
+  fastify.get('/:id/commands', { preHandler: [requirePermission('device:read')] }, async (request) => {
     const { id } = request.params as { id: string };
     const { page, limit } = request.query as any;
     return deviceService.getCommandHistory(id, parseInt(page) || 1, parseInt(limit) || 20);
   });
 
   fastify.post('/:id/commands', {
+    preHandler: [requirePermission('mdm:command')],
     schema: {
       body: {
         type: 'object',

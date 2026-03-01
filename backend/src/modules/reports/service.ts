@@ -35,7 +35,7 @@ export class ReportService {
     return this.cached('report:assets', 60, async () => {
       const [byStatus, byDepartment, total] = await Promise.all([
         this.prisma.asset.groupBy({ by: ['status'], _count: true }),
-        this.prisma.asset.groupBy({ by: ['department'], _count: true, orderBy: { _count: { department: 'desc' } }, take: 10 }),
+        this.prisma.asset.groupBy({ by: ['departmentId'], _count: true, orderBy: { _count: { departmentId: 'desc' } }, take: 10 }),
         this.prisma.asset.count(),
       ]);
       return { byStatus, byDepartment, total };
@@ -77,7 +77,7 @@ export class ReportService {
     csv += '资产状态,数量\n';
     data.byStatus.forEach((r: any) => { csv += `${r.status},${r._count}\n`; });
     csv += '\n部门,数量\n';
-    data.byDepartment.forEach((r: any) => { csv += `${r.department || "未分配"},${r._count}\n`; });
+    data.byDepartment.forEach((r: any) => { csv += `${r.departmentId || "未分配"},${r._count}\n`; });
     csv += `\n总计,${data.total}\n`;
     return csv;
   }
