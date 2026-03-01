@@ -12,6 +12,9 @@ import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/use-auth';
 
+const flatDepts = (nodes: any[], depth = 0): { id: string; name: string; depth: number }[] =>
+  nodes.flatMap((n: any) => [{ id: n.id, name: n.name, depth }, ...flatDepts(n.children || [], depth + 1)]);
+
 export default function AssetDetailPage() {
   const { t, i18n } = useTranslation();
   const { id } = useParams();
@@ -22,6 +25,8 @@ export default function AssetDetailPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editForm, setEditForm] = useState<any>({});
   const [saving, setSaving] = useState(false);
+  const [depts, setDepts] = useState<{ id: string; name: string; depth: number }[]>([]);
+  const [users, setUsers] = useState<{ id: string; name: string }[]>([]);
 
   const locale = i18n.language === 'zh' ? 'zh-CN' : 'en-US';
 
@@ -34,22 +39,36 @@ export default function AssetDetailPage() {
   }, [id]);
 
   useEffect(() => {
-    if (editOpen && asset) {
-      setEditForm({
-        assignedTo: asset.assignedTo || '',
-        department: asset.department || '',
-        location: asset.location || '',
-        status: asset.status || 'in_stock',
-        warrantyEnd: asset.warrantyEnd ? new Date(asset.warrantyEnd).toISOString().slice(0, 10) : '',
-        notes: asset.notes || '',
-      });
+    if (editOpen) {
+      api.get('/api/departments/tree').then(res => setDepts(flatDepts(res.data || []))).catch(() => {});
+      if (asset) {
+        setEditForm({
+          assignedToId: asset.assignedToId || '',
+          departmentId: asset.departmentId || '',
+          location: asset.location || '',
+          status: asset.status || 'in_stock',
+          warrantyEnd: asset.warrantyEnd ? new Date(asset.warrantyEnd).toISOString().slice(0, 10) : '',
+          notes: asset.notes || '',
+        });
+      }
     }
   }, [editOpen]);
+
+  useEffect(() => {
+    if (!editOpen) return;
+    const params = new URLSearchParams();
+    if (editForm.departmentId) params.set('departmentId', editForm.departmentId);
+    api.get(`/api/auth/users?${params}`).then(res => setUsers(res.data.users || [])).catch(() => {});
+  }, [editForm.departmentId, editOpen]);
 
   const handleEdit = async () => {
     setSaving(true);
     try {
-      await api.put(`/api/assets/${id}`, editForm);
+      await api.put(`/api/assets/${id}`, {
+        ...editForm,
+        assignedToId: editForm.assignedToId || undefined,
+        departmentId: editForm.departmentId || undefined,
+      });
       setEditOpen(false);
       loadAsset();
     } finally {
@@ -80,8 +99,8 @@ export default function AssetDetailPage() {
         <Card>
           <CardHeader><CardTitle className="text-sm">{t('assets.info')}</CardTitle></CardHeader>
           <CardContent className="space-y-2 text-sm">
-            <div className="flex justify-between"><span className="text-muted-foreground">{t('assets.assignedTo')}</span><span>{asset.assignedTo || '-'}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">{t('assets.department')}</span><span>{asset.department || '-'}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">{t('assets.assignedTo')}</span><span>{asset.assignedUser?.name || '-'}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">{t('assets.department')}</span><span>{asset.department?.name || '-'}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">{t('assets.location')}</span><span>{asset.location || '-'}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">{t('assets.purchaseDate')}</span><span>{asset.purchaseDate ? new Date(asset.purchaseDate).toLocaleDateString(locale) : '-'}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">{t('assets.purchasePrice')}</span><span>{asset.purchasePrice ? `¥${asset.purchasePrice}` : '-'}</span></div>
@@ -112,12 +131,32 @@ export default function AssetDetailPage() {
           </DialogHeader>
           <div className="grid grid-cols-2 gap-4 py-2">
             <div className="space-y-1">
-              <label className="text-sm font-medium">{t('assets.assignedTo')}</label>
-              <Input value={editForm.assignedTo || ''} onChange={e => setEditForm({ ...editForm, assignedTo: e.target.value })} />
+              <label className="text-sm font-medium">{t('assets.department')}</label>
+              <select
+                value={editForm.departmentId || ''}
+                onChange={e => setEditForm({ ...editForm, departmentId: e.target.value, assignedToId: '' })}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              >
+                <option value="">{t('common.select')}</option>
+                {depts.map(d => (
+                  <option key={d.id} value={d.id}>
+                    {'\u00a0'.repeat(d.depth * 2)}{d.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-medium">{t('assets.department')}</label>
-              <Input value={editForm.department || ''} onChange={e => setEditForm({ ...editForm, department: e.target.value })} />
+              <label className="text-sm font-medium">{t('assets.assignedTo')}</label>
+              <select
+                value={editForm.assignedToId || ''}
+                onChange={e => setEditForm({ ...editForm, assignedToId: e.target.value })}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              >
+                <option value="">{t('common.select')}</option>
+                {users.map(u => (
+                  <option key={u.id} value={u.id}>{u.name}</option>
+                ))}
+              </select>
             </div>
             <div className="space-y-1">
               <label className="text-sm font-medium">{t('assets.location')}</label>

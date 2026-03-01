@@ -72,8 +72,8 @@ export default function AssetsPage() {
                 <tr key={a.id} className="border-b hover:bg-muted/20">
                   <td className="p-3 font-medium">{a.device?.deviceName || a.device?.modelName || '-'}</td>
                   <td className="p-3 font-mono text-xs">{a.device?.serialNumber || '-'}</td>
-                  <td className="p-3">{a.assignedTo || '-'}</td>
-                  <td className="p-3">{a.department || '-'}</td>
+                  <td className="p-3">{a.assignedUser?.name || '-'}</td>
+                  <td className="p-3">{a.department?.name || '-'}</td>
                   <td className="p-3"><Badge variant={ASSET_STATUS_VARIANT[a.status] || 'secondary'}>{t('assetStatus.' + a.status)}</Badge></td>
                   <td className="p-3">{a.warrantyEnd ? new Date(a.warrantyEnd).toLocaleDateString(locale) : '-'}</td>
                   <td className="p-3 text-xs">{new Date(a.createdAt).toLocaleDateString(locale)}</td>

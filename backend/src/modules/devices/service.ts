@@ -18,6 +18,7 @@ export class DeviceService {
         { deviceName: { contains: filters.search, mode: 'insensitive' } },
         { serialNumber: { contains: filters.search, mode: 'insensitive' } },
         { modelName: { contains: filters.search, mode: 'insensitive' } },
+        { udid: { contains: filters.search, mode: 'insensitive' } },
       ];
     }
 

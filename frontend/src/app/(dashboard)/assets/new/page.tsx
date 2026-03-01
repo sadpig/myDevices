@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,15 +8,34 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+const flatDepts = (nodes: any[], depth = 0): { id: string; name: string; depth: number }[] =>
+  nodes.flatMap((n: any) => [{ id: n.id, name: n.name, depth }, ...flatDepts(n.children || [], depth + 1)]);
+
 export default function NewAssetPage() {
   const { t } = useTranslation();
   const router = useRouter();
   const [form, setForm] = useState({
     deviceId: '', purchaseDate: '', purchasePrice: '', warrantyEnd: '',
-    assignedTo: '', department: '', location: '', status: 'in_stock', notes: '',
+    assignedToId: '', departmentId: '', location: '', status: 'in_stock', notes: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [depts, setDepts] = useState<{ id: string; name: string; depth: number }[]>([]);
+  const [users, setUsers] = useState<{ id: string; name: string }[]>([]);
+
+  useEffect(() => {
+    api.get('/api/departments/tree').then(res => {
+      setDepts(flatDepts(res.data || []));
+    }).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (form.departmentId) params.set('departmentId', form.departmentId);
+    api.get(`/api/auth/users?${params}`).then(res => {
+      setUsers(res.data.users || []);
+    }).catch(() => {});
+  }, [form.departmentId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,6 +45,8 @@ export default function NewAssetPage() {
       const data = {
         ...form,
         purchasePrice: form.purchasePrice ? parseFloat(form.purchasePrice) : undefined,
+        assignedToId: form.assignedToId || undefined,
+        departmentId: form.departmentId || undefined,
       };
       await api.post('/api/assets', data);
       router.push('/assets');
@@ -70,12 +91,32 @@ export default function NewAssetPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">{t('assets.assignedTo')}</label>
-                <Input value={form.assignedTo} onChange={e => update('assignedTo', e.target.value)} />
+                <label className="text-sm font-medium">{t('assets.department')}</label>
+                <select
+                  value={form.departmentId}
+                  onChange={e => { update('departmentId', e.target.value); update('assignedToId', ''); }}
+                  className="w-full border rounded-md px-3 py-2 text-sm"
+                >
+                  <option value="">{t('common.select')}</option>
+                  {depts.map(d => (
+                    <option key={d.id} value={d.id}>
+                      {'\u00a0'.repeat(d.depth * 2)}{d.name}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">{t('assets.department')}</label>
-                <Input value={form.department} onChange={e => update('department', e.target.value)} />
+                <label className="text-sm font-medium">{t('assets.assignedTo')}</label>
+                <select
+                  value={form.assignedToId}
+                  onChange={e => update('assignedToId', e.target.value)}
+                  className="w-full border rounded-md px-3 py-2 text-sm"
+                >
+                  <option value="">{t('common.select')}</option>
+                  {users.map(u => (
+                    <option key={u.id} value={u.id}>{u.name}</option>
+                  ))}
+                </select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">

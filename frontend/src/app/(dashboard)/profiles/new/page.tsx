@@ -10,6 +10,29 @@ import { ArrowLeft } from 'lucide-react';
 
 const PAYLOAD_TYPES = ['WiFi', 'VPN', 'Email', 'Passcode', 'Restrictions', 'Certificate', 'APN', 'General'];
 
+const PAYLOAD_TEMPLATES: Record<string, { payloadType: string; payload: Record<string, any> }> = {
+  wifi: {
+    payloadType: 'com.apple.wifi.managed',
+    payload: { SSID_STR: '', EncryptionType: 'WPA2', AutoJoin: true, IsHotspot: false },
+  },
+  vpn: {
+    payloadType: 'com.apple.vpn.managed',
+    payload: { VPNType: 'IKEv2', RemoteAddress: '', LocalIdentifier: '', RemoteIdentifier: '', AuthenticationMethod: 'Certificate' },
+  },
+  email: {
+    payloadType: 'com.apple.mail.managed',
+    payload: { EmailAccountType: 'EmailTypeIMAP', IncomingMailServerHostName: '', IncomingMailServerPortNumber: 993, IncomingMailServerUseSSL: true, OutgoingMailServerHostName: '', OutgoingMailServerPortNumber: 587, OutgoingMailServerUseSSL: true },
+  },
+  restrictions: {
+    payloadType: 'com.apple.applicationaccess',
+    payload: { allowCamera: true, allowScreenShot: true, allowAppInstallation: true, allowAppRemoval: false, allowSafari: true, allowAirDrop: false },
+  },
+  passcode: {
+    payloadType: 'com.apple.mobiledevice.passwordpolicy',
+    payload: { allowSimple: false, forcePIN: true, minLength: 6, maxInactivity: 5, maxPINAgeInDays: 90, requireAlphanumeric: false },
+  },
+};
+
 export default function NewProfilePage() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -69,6 +92,26 @@ export default function NewProfilePage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">{'配置模板（可选）'}</label>
+              <select
+                onChange={e => {
+                  const tpl = PAYLOAD_TEMPLATES[e.target.value];
+                  if (tpl) {
+                    setForm(f => ({ ...f, payloadType: tpl.payloadType, payload: JSON.stringify(tpl.payload, null, 2) }));
+                  }
+                }}
+                className="w-full border rounded-md px-3 py-2 text-sm"
+              >
+                <option value="">{'选择模板...'}</option>
+                <option value="wifi">WiFi</option>
+                <option value="vpn">VPN</option>
+                <option value="email">Email</option>
+                <option value="restrictions">{'访问限制'}</option>
+                <option value="passcode">{'密码策略'}</option>
+              </select>
+            </div>
+
             <div className="space-y-1">
               <label className="text-sm font-medium">{t('profiles.name')} *</label>
               <Input
