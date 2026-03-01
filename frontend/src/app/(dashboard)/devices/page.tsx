@@ -11,9 +11,11 @@ import { Button } from '@/components/ui/button';
 import { Smartphone } from 'lucide-react';
 import { DEVICE_ICONS, DEVICE_TYPES } from '@/lib/constants';
 import { SortableHeader, useSort } from '@/components/ui/sortable-header';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function DevicesPage() {
   const { t, i18n } = useTranslation();
+  const { hasPermission } = useAuth();
   const [devices, setDevices] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);

@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/hooks/use-auth';
 
 const PAYLOAD_TYPES = ['WiFi', 'VPN', 'Email', 'Passcode', 'Restrictions', 'Certificate', 'APN', 'General'];
 
@@ -17,6 +18,7 @@ export default function ProfileDetailPage() {
   const { t, i18n } = useTranslation();
   const { id } = useParams();
   const router = useRouter();
+  const { hasPermission } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -121,12 +123,12 @@ export default function ProfileDetailPage() {
         <h1 className="text-2xl font-bold">{profile.name}</h1>
         <Badge variant="outline">{profile.payloadType}</Badge>
         <div className="ml-auto flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
+          {hasPermission('profile:write') && <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
             <Pencil className="h-4 w-4 mr-2" />{t('common.edit')}
-          </Button>
-          <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
+          </Button>}
+          {hasPermission('profile:write') && <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
             <Trash2 className="h-4 w-4 mr-2" />{t('common.delete')}
-          </Button>
+          </Button>}
         </div>
       </div>
 

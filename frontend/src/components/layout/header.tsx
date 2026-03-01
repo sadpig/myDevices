@@ -8,17 +8,22 @@ import { LanguageToggle } from './language-toggle';
 interface HeaderProps {
   onLogout: () => void;
   userName?: string;
+  userRole?: string;
+  userDepartment?: string;
 }
 
-export function Header({ onLogout, userName }: HeaderProps) {
+export function Header({ onLogout, userName, userRole, userDepartment }: HeaderProps) {
   const { t } = useTranslation();
+
+  const userInfo = [userName, userRole, userDepartment].filter(Boolean).join(' | ');
+
   return (
     <header className="h-14 border-b border-border bg-card/50 glass-subtle flex items-center justify-between px-6 sticky top-0 z-10">
       <div />
       <div className="flex items-center gap-3">
         <LanguageToggle />
         <ThemeToggle />
-        {userName && <span className="text-sm text-muted-foreground">{userName}</span>}
+        {userInfo && <span className="text-sm text-muted-foreground">{userInfo}</span>}
         <Button variant="ghost" size="sm" onClick={onLogout}>
           <LogOut className="h-4 w-4 mr-2" />
           {t('common.logout')}

@@ -10,11 +10,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function AssetDetailPage() {
   const { t, i18n } = useTranslation();
   const { id } = useParams();
   const router = useRouter();
+  const { hasPermission } = useAuth();
   const [asset, setAsset] = useState<any>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -69,8 +71,8 @@ export default function AssetDetailPage() {
         <h1 className="text-2xl font-bold">{t('assets.detail')}</h1>
         <Badge>{t('assetStatus.' + asset.status)}</Badge>
         <div className="ml-auto flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}><Pencil className="h-4 w-4 mr-1" />{t('common.edit')}</Button>
-          <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}><Trash2 className="h-4 w-4 mr-1" />{t('common.delete')}</Button>
+          {hasPermission('asset:write') && <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}><Pencil className="h-4 w-4 mr-1" />{t('common.edit')}</Button>}
+          {hasPermission('asset:delete') && <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}><Trash2 className="h-4 w-4 mr-1" />{t('common.delete')}</Button>}
         </div>
       </div>
 

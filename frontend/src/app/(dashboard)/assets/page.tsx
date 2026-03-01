@@ -10,9 +10,11 @@ import { Button } from '@/components/ui/button';
 import { ASSET_STATUS_VARIANT } from '@/lib/constants';
 import { SortableHeader, useSort } from '@/components/ui/sortable-header';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function AssetsPage() {
   const { t, i18n } = useTranslation();
+  const { hasPermission } = useAuth();
   const [assets, setAssets] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -37,7 +39,7 @@ export default function AssetsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t('assets.title')}</h1>
-        <Link href="/assets/new"><Button>{t('assets.new')}</Button></Link>
+        {hasPermission('asset:write') && <Link href="/assets/new"><Button>{t('assets.new')}</Button></Link>}
       </div>
 
       <div className="flex gap-4">

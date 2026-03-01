@@ -3,15 +3,25 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 
+interface UserRole {
+  id: string;
+  code: string;
+  name: string;
+  dataScope: string;
+}
+
+interface UserDepartment {
+  id: string;
+  name: string;
+}
+
 interface User {
   id: string;
   email: string;
   name: string;
-  role: string;
-  preferences?: {
-    theme?: string;
-    language?: string;
-  };
+  role: UserRole;
+  department: UserDepartment | null;
+  permissions: string[];
 }
 
 export function useAuth() {
@@ -51,5 +61,13 @@ export function useAuth() {
     router.push('/dashboard');
   }, [router]);
 
-  return { user, loading, login, logout };
+  const hasPermission = useCallback((code: string) => {
+    return user?.permissions?.includes(code) ?? false;
+  }, [user]);
+
+  const hasAnyPermission = useCallback((...codes: string[]) => {
+    return codes.some(code => user?.permissions?.includes(code));
+  }, [user]);
+
+  return { user, loading, login, logout, hasPermission, hasAnyPermission };
 }

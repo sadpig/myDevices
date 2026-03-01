@@ -8,9 +8,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SortableHeader, useSort } from '@/components/ui/sortable-header';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function ProfilesPage() {
   const { t, i18n } = useTranslation();
+  const { hasPermission } = useAuth();
   const [profiles, setProfiles] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -30,7 +32,7 @@ export default function ProfilesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t('profiles.title')}</h1>
-        <Link href="/profiles/new"><Button>{t('common.new')}</Button></Link>
+        {hasPermission('profile:write') && <Link href="/profiles/new"><Button>{t('common.new')}</Button></Link>}
       </div>
 
       <div className="flex gap-4">

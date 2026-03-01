@@ -11,11 +11,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function DeviceDetailPage() {
   const { id } = useParams();
   const router = useRouter();
   const { t, i18n } = useTranslation();
+  const { hasPermission } = useAuth();
   const [device, setDevice] = useState<any>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -75,15 +77,15 @@ export default function DeviceDetailPage() {
         <h1 className="text-2xl font-bold">{device.deviceName || device.serialNumber}</h1>
         <Badge variant={device.enrollmentStatus === 'enrolled' ? 'default' : 'secondary'}>{statusLabels[device.enrollmentStatus]}</Badge>
         <div className="ml-auto flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}><Pencil className="h-4 w-4 mr-2" />{t('common.edit')}</Button>
-          <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}><Trash2 className="h-4 w-4 mr-2" />{t('common.delete')}</Button>
+          {hasPermission('device:write') && <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}><Pencil className="h-4 w-4 mr-2" />{t('common.edit')}</Button>}
+          {hasPermission('device:delete') && <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}><Trash2 className="h-4 w-4 mr-2" />{t('common.delete')}</Button>}
         </div>
       </div>
 
       <Tabs defaultValue="info">
         <TabsList>
           <TabsTrigger value="info">{t('devices.tabs.info')}</TabsTrigger>
-          <TabsTrigger value="commands">{t('devices.tabs.commands')}</TabsTrigger>
+          {hasPermission('mdm:command') && <TabsTrigger value="commands">{t('devices.tabs.commands')}</TabsTrigger>}
           <TabsTrigger value="profiles">{t('devices.tabs.profiles')}</TabsTrigger>
         </TabsList>
 
@@ -123,6 +125,7 @@ export default function DeviceDetailPage() {
           ) : null}
         </TabsContent>
 
+        {hasPermission('mdm:command') && (
         <TabsContent value="commands">
           <Card>
             <CardContent className="p-0">
@@ -150,6 +153,7 @@ export default function DeviceDetailPage() {
             </CardContent>
           </Card>
         </TabsContent>
+        )}
 
         <TabsContent value="profiles">
           <Card>
