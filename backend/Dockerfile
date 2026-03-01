@@ -3,7 +3,7 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 COPY prisma.config.ts ./
-RUN npm ci
+RUN npm install --production=false
 COPY . .
 RUN npx prisma generate
 RUN npm run build
