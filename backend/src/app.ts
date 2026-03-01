@@ -5,6 +5,13 @@ import prismaPlugin from './plugins/prisma.js';
 import redisPlugin from './plugins/redis.js';
 import swagger from '@fastify/swagger';
 import plist from 'plist';
+import authRoutes from './modules/auth/routes.js';
+import deviceRoutes from './modules/devices/routes.js';
+import assetRoutes from './modules/assets/routes.js';
+import mdmRoutes from './modules/mdm/routes.js';
+import auditRoutes from './modules/audit/routes.js';
+import reportRoutes from './modules/reports/routes.js';
+import profileRoutes from './modules/profiles/routes.js';
 
 export async function buildApp() {
   const app = Fastify({ logger: true });
@@ -38,13 +45,13 @@ export async function buildApp() {
   );
 
   // Register route modules
-  await app.register(import('./modules/auth/routes.js'), { prefix: '/api/auth' });
-  await app.register(import('./modules/devices/routes.js'), { prefix: '/api/devices' });
-  await app.register(import('./modules/assets/routes.js'), { prefix: '/api/assets' });
-  await app.register(import('./modules/mdm/routes.js'), { prefix: '/mdm' });
-  await app.register(import('./modules/audit/routes.js'), { prefix: '/api/audit-logs' });
-  await app.register(import('./modules/reports/routes.js'), { prefix: '/api/reports' });
-  await app.register(import('./modules/profiles/routes.js'), { prefix: '/api/profiles' });
+  await app.register(authRoutes, { prefix: '/api/auth' });
+  await app.register(deviceRoutes, { prefix: '/api/devices' });
+  await app.register(assetRoutes, { prefix: '/api/assets' });
+  await app.register(mdmRoutes, { prefix: '/mdm' });
+  await app.register(auditRoutes, { prefix: '/api/audit-logs' });
+  await app.register(reportRoutes, { prefix: '/api/reports' });
+  await app.register(profileRoutes, { prefix: '/api/profiles' });
 
   app.get('/health', async () => ({ status: 'ok' }));
 

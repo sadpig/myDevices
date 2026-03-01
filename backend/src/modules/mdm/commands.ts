@@ -1,4 +1,4 @@
-import { PrismaClient, CommandStatus } from '@prisma/client';
+import { PrismaClient, CommandStatus, Prisma } from '@prisma/client';
 import { APNsService } from './apns.js';
 
 export class CommandService {
@@ -7,7 +7,7 @@ export class CommandService {
     private apns: APNsService,
   ) {}
 
-  async queueCommand(deviceId: string, commandType: string, payload: Record<string, unknown> = {}) {
+  async queueCommand(deviceId: string, commandType: string, payload: Prisma.InputJsonValue = {}) {
     const device = await this.prisma.device.findUniqueOrThrow({ where: { id: deviceId } });
     const command = await this.prisma.mDMCommand.create({
       data: {
@@ -41,7 +41,7 @@ export class CommandService {
     });
   }
 
-  async acknowledgeCommand(requestId: string, status: CommandStatus, result?: Record<string, unknown>) {
+  async acknowledgeCommand(requestId: string, status: CommandStatus, result?: Prisma.InputJsonValue) {
     return this.prisma.mDMCommand.update({
       where: { requestId },
       data: { status, acknowledgedAt: new Date(), result: result ?? undefined },

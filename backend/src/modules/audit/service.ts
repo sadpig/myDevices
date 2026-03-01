@@ -1,9 +1,9 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 
 export class AuditService {
   constructor(private prisma: PrismaClient) {}
 
-  async log(userId: string, action: string, targetType: string, targetId: string, details: Record<string, unknown> = {}, ipAddress?: string) {
+  async log(userId: string, action: string, targetType: string, targetId: string, details: Prisma.InputJsonValue = {}, ipAddress?: string) {
     return this.prisma.auditLog.create({
       data: { userId, action, targetType, targetId, details, ipAddress },
     });
