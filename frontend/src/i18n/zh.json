@@ -227,5 +227,9 @@
   "profiles.fields.identifier": "标识符",
 
   "reports.osVersionDistribution": "系统版本分布",
-  "reports.unknown": "未知"
+  "reports.unknown": "未知",
+
+  "notifications.title": "通知",
+  "notifications.empty": "暂无通知",
+  "notifications.markAllRead": "全部已读"
 }

@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import { useAuth } from '@/hooks/use-auth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -108,6 +109,7 @@ function DeptNode({
 }
 
 export default function DepartmentsPage() {
+  const { t } = useTranslation();
   const { hasPermission } = useAuth();
   const canWrite = hasPermission('dept:write');
 
@@ -135,7 +137,7 @@ export default function DepartmentsPage() {
           return next;
         });
       })
-      .catch(() => setError('加载部门失败'));
+      .catch(() => setError(t('departments.loadFailed')));
   }, []);
 
   const loadFlat = useCallback(() => {
@@ -173,7 +175,7 @@ export default function DepartmentsPage() {
 
   const handleCreate = async () => {
     if (!form.name.trim() || !form.code.trim()) {
-      setDialogError('名称和编码不能为空');
+      setDialogError(t('departments.nameCodeRequired'));
       return;
     }
     setSaving(true);
@@ -189,7 +191,7 @@ export default function DepartmentsPage() {
       loadTree();
       loadFlat();
     } catch (e: any) {
-      setDialogError(e?.response?.data?.error ?? '创建失败');
+      setDialogError(e?.response?.data?.error ?? t('settings.createFailed'));
     } finally {
       setSaving(false);
     }
@@ -198,7 +200,7 @@ export default function DepartmentsPage() {
   const handleEdit = async () => {
     if (!editTarget) return;
     if (!form.name.trim() || !form.code.trim()) {
-      setDialogError('名称和编码不能为空');
+      setDialogError(t('departments.nameCodeRequired'));
       return;
     }
     setSaving(true);
@@ -214,7 +216,7 @@ export default function DepartmentsPage() {
       loadTree();
       loadFlat();
     } catch (e: any) {
-      setDialogError(e?.response?.data?.error ?? '保存失败');
+      setDialogError(e?.response?.data?.error ?? t('settings.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -230,7 +232,7 @@ export default function DepartmentsPage() {
       loadTree();
       loadFlat();
     } catch (e: any) {
-      setDialogError(e?.response?.data?.error ?? '删除失败');
+      setDialogError(e?.response?.data?.error ?? t('roles.deleteFailed'));
     } finally {
       setSaving(false);
     }
@@ -239,30 +241,30 @@ export default function DepartmentsPage() {
   const FormFields = () => (
     <div className="space-y-4 py-2">
       <div className="space-y-2">
-        <label className="text-sm font-medium">名称</label>
+        <label className="text-sm font-medium">{t('departments.name')}</label>
         <Input
           value={form.name}
           onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-          placeholder="部门名称"
+          placeholder={t('departments.namePlaceholder')}
         />
       </div>
       <div className="space-y-2">
-        <label className="text-sm font-medium">编码</label>
+        <label className="text-sm font-medium">{t('departments.code')}</label>
         <Input
           value={form.code}
           onChange={e => setForm(f => ({ ...f, code: e.target.value }))}
-          placeholder="部门编码"
+          placeholder={t('departments.codePlaceholder')}
           className="font-mono"
         />
       </div>
       <div className="space-y-2">
-        <label className="text-sm font-medium">上级部门</label>
+        <label className="text-sm font-medium">{t('departments.parent')}</label>
         <select
           value={form.parentId}
           onChange={e => setForm(f => ({ ...f, parentId: e.target.value }))}
           className="w-full border rounded-md px-3 py-2 text-sm bg-background"
         >
-          <option value="">无（顶级部门）</option>
+          <option value="">{t('departments.noParent')}</option>
           {flatList
             .filter(d => !editTarget || d.id !== editTarget.id)
             .map(d => (
@@ -271,7 +273,7 @@ export default function DepartmentsPage() {
         </select>
       </div>
       <div className="space-y-2">
-        <label className="text-sm font-medium">排序</label>
+        <label className="text-sm font-medium">{t('departments.sortOrder')}</label>
         <Input
           type="number"
           value={form.sortOrder}
